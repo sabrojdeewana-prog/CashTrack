@@ -1,0 +1,19 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+*.iml
+.idea/
+.vscode/
+android/.gradle/
+android/app/build/
+ios/Pods/
+macos/Pods/
+# Secrets / signing
+*.jks
+*.keystore
+key.properties
+google-services.json

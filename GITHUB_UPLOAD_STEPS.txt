@@ -1,0 +1,7 @@
+CASHTRACK - GITHUB UPLOAD
+1. GitHub -> New repository -> cashtrack -> Create repository.
+2. On your computer, open the CashTrack folder.
+3. Upload the whole folder contents (not a ZIP) using Add file -> Upload files.
+4. Drag/select everything inside CashTrack and Commit changes.
+5. For a public repository, do NOT upload signing keys, key.properties, or private credentials.
+6. For Firebase, configure google-services.json locally and keep it ignored unless you intentionally choose another secure setup.
