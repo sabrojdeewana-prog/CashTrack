@@ -9,114 +9,145 @@ class AdminPanelScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: const Text(
+          'CashTrack Admin',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    child: const Icon(Icons.admin_panel_settings, size: 30),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Administrator',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          adminEmail,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Admin Access',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
+          _adminHeader(),
+          const SizedBox(height: 18),
 
           _adminCard(
-            icon: Icons.dashboard,
-            title: 'Dashboard Overview',
-            subtitle: 'App activity and important statistics',
+            context,
+            Icons.dashboard_rounded,
+            'Dashboard Overview',
+            'App activity and important statistics',
+            const AdminOverviewScreen(),
           ),
 
           _adminCard(
-            icon: Icons.people,
-            title: 'Users',
-            subtitle: 'View and manage app users',
+            context,
+            Icons.people_alt_rounded,
+            'Users',
+            'View and manage app users',
+            const AdminUsersScreen(),
           ),
 
           _adminCard(
-            icon: Icons.analytics,
-            title: 'Analytics',
-            subtitle: 'App usage and activity statistics',
+            context,
+            Icons.analytics_rounded,
+            'Analytics',
+            'App usage and activity statistics',
+            const AdminAnalyticsScreen(),
           ),
 
           _adminCard(
-            icon: Icons.receipt_long,
-            title: 'Transactions',
-            subtitle: 'View transaction activity',
+            context,
+            Icons.receipt_long_rounded,
+            'Transactions',
+            'View transaction activity',
+            const AdminTransactionsScreen(),
           ),
 
           _adminCard(
-            icon: Icons.download,
-            title: 'Reports & Downloads',
-            subtitle: 'Monitor report generation and downloads',
+            context,
+            Icons.download_rounded,
+            'Reports & Downloads',
+            'Monitor report generation and downloads',
+            const AdminReportsScreen(),
           ),
 
           _adminCard(
-            icon: Icons.notifications,
-            title: 'Notifications',
-            subtitle: 'Manage app notifications and reminders',
+            context,
+            Icons.notifications_active_rounded,
+            'Notifications',
+            'Manage app notifications and reminders',
+            const AdminNotificationsScreen(),
           ),
 
           _adminCard(
-            icon: Icons.settings,
-            title: 'App Settings',
-            subtitle: 'Manage application configuration',
+            context,
+            Icons.settings_rounded,
+            'App Settings',
+            'Manage application configuration',
+            const AdminSettingsScreen(),
           ),
 
           _adminCard(
-            icon: Icons.security,
-            title: 'Security',
-            subtitle: 'Admin access and security settings',
+            context,
+            Icons.security_rounded,
+            'Security',
+            'Admin access and security settings',
+            const AdminSecurityScreen(),
           ),
         ],
       ),
     );
   }
 
-  static Widget _adminCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _adminHeader() {
+    return Card(
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 30,
+              child: Icon(
+                Icons.admin_panel_settings_rounded,
+                size: 34,
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Administrator',
+                    style: TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    adminEmail,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Admin Access',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _adminCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    Widget page,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 7,
+        ),
         leading: CircleAvatar(
           child: Icon(icon),
         ),
@@ -125,8 +156,164 @@ class AdminPanelScreen extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {},
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 17),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => page),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AdminOverviewScreen extends StatelessWidget {
+  const AdminOverviewScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Dashboard Overview',
+      icon: Icons.dashboard_rounded,
+      message: 'App activity and important statistics will appear here.',
+    );
+  }
+}
+
+class AdminUsersScreen extends StatelessWidget {
+  const AdminUsersScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Users',
+      icon: Icons.people_alt_rounded,
+      message: 'User management will appear here.',
+    );
+  }
+}
+
+class AdminAnalyticsScreen extends StatelessWidget {
+  const AdminAnalyticsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Analytics',
+      icon: Icons.analytics_rounded,
+      message: 'App usage and analytics will appear here.',
+    );
+  }
+}
+
+class AdminTransactionsScreen extends StatelessWidget {
+  const AdminTransactionsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Transactions',
+      icon: Icons.receipt_long_rounded,
+      message: 'Transaction activity will appear here.',
+    );
+  }
+}
+
+class AdminReportsScreen extends StatelessWidget {
+  const AdminReportsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Reports & Downloads',
+      icon: Icons.download_rounded,
+      message: 'Report and download activity will appear here.',
+    );
+  }
+}
+
+class AdminNotificationsScreen extends StatelessWidget {
+  const AdminNotificationsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Notifications',
+      icon: Icons.notifications_active_rounded,
+      message: 'Notification management will appear here.',
+    );
+  }
+}
+
+class AdminSettingsScreen extends StatelessWidget {
+  const AdminSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'App Settings',
+      icon: Icons.settings_rounded,
+      message: 'Application settings will appear here.',
+    );
+  }
+}
+
+class AdminSecurityScreen extends StatelessWidget {
+  const AdminSecurityScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _AdminPage(
+      title: 'Security',
+      icon: Icons.security_rounded,
+      message: 'Admin security settings will appear here.',
+    );
+  }
+}
+
+class _AdminPage extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final String message;
+
+  const _AdminPage({
+    required this.title,
+    required this.icon,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 70),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
