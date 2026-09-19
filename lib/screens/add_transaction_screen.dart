@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/transaction_model.dart';
-import '../services/firebase_service.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
