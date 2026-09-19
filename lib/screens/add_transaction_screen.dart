@@ -59,7 +59,6 @@ class _AddTransactionScreenState
       ),
     );
 
-    await FirebaseService.transactionAdded(type);
 
     if (mounted) {
       Navigator.pop(context, true);
