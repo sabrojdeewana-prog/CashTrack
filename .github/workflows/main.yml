@@ -26,15 +26,27 @@ jobs:
       - name: Create Android project
         run: |
           rm -rf android
-          flutter create . --platforms=android
+          flutter create --platforms=android .
 
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Analyze Flutter code
+        run: flutter analyze
+
+      - name: Build Debug APK
+        run: flutter build apk --debug
+
       - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CashTrack-Debug-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: CashTrack-APK
