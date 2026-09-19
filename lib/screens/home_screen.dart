@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.22),
+            color: Colors.blue.withValues(alpha: 0.22),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -325,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -359,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? 'Your current balance is positive'
                 : 'Your expenses are higher than income',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.88),
+              color: Colors.white.withValues(alpha: 0.88),
               fontSize: 13,
             ),
           ),
@@ -376,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 width: 1,
                 height: 42,
-                color: Colors.white.withOpacity(0.25),
+                color: Colors.white.withValues(alpha: 0.25),
               ),
               Expanded(
                 child: _balanceMini(
@@ -399,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -410,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.75),
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 11,
                   ),
                 ),
@@ -446,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.045),
+            color: Colors.black.withValues(alpha: 0.045),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -458,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.10),
+              color: iconColor.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -513,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(17),
           border: Border.all(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
           ),
         ),
         child: Row(
@@ -578,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.10),
+              color: color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
