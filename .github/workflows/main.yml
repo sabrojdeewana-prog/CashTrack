@@ -28,6 +28,20 @@ jobs:
           rm -rf android
           flutter create --platforms=android .
 
+      - name: Configure Firebase
+        env:
+          FIREBASE_ANDROID_JSON: ${{ secrets.FIREBASE_ANDROID_JSON }}
+        run: |
+          printf '%s' "$FIREBASE_ANDROID_JSON" > android/app/google-services.json
+
+          if [ -f android/settings.gradle.kts ]; then
+            sed -i '/plugins {/a\    id("com.google.gms.google-services") version "4.4.2" apply false' android/settings.gradle.kts
+            sed -i '/plugins {/a\    id("com.google.gms.google-services")' android/app/build.gradle.kts
+          elif [ -f android/settings.gradle ]; then
+            sed -i '/plugins {/a\    id "com.google.gms.google-services" version "4.4.2" apply false' android/settings.gradle
+            sed -i '/plugins {/a\    id "com.google.gms.google-services"' android/app/build.gradle
+          fi
+
       - name: Get dependencies
         run: flutter pub get
 
