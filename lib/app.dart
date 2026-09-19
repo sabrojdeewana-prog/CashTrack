@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
 
 class CashTrackApp extends StatelessWidget {
   const CashTrackApp({super.key});
@@ -9,18 +8,17 @@ class CashTrackApp extends StatelessWidget {
     return MaterialApp(
       title: 'CashTrack',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.indigo,
-        brightness: Brightness.light,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('CashTrack'),
+        ),
+        body: const Center(
+          child: Text(
+            'CashTrack is working!',
+            style: TextStyle(fontSize: 24),
+          ),
+        ),
       ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.indigo,
-        brightness: Brightness.dark,
-      ),
-      home: const HomeScreen(),
     );
   }
 }
