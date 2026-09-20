@@ -25,7 +25,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     'History',
   ];
 
-  int selected = 0;
+  int selected = -1;
   final List<String> history = [];
 
   final amount = TextEditingController();
@@ -487,7 +487,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedTitle = tools[selected];
+    final selectedTitle = selected == -1 ? 'All Calculator Tools' : tools[selected];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
@@ -502,7 +502,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
         children: [
-          if (selected == 0) ...[
+          if (selected == -1) ...[
             const Text(
               'All Calculator Tools',
               style: TextStyle(
@@ -594,7 +594,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               children: [
                 IconButton(
                   onPressed: () => setState(() {
-                    selected = 0;
+                    selected = -1;
                     clearFields();
                   }),
                   icon: const Icon(Icons.arrow_back_rounded),
