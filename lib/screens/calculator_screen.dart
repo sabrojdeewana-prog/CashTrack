@@ -116,7 +116,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               backgroundColor: equalsButton
                   ? Colors.blue
                   : operationButton
-                      ? Colors.blue.withOpacity(0.12)
+                      ? Colors.blue.withValues(alpha: 0.12)
                       : Colors.white,
               foregroundColor:
                   equalsButton || operationButton ? Colors.blue : Colors.black87,
