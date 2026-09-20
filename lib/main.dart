@@ -7,7 +7,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
-  await GoogleAuthService.initialize();
 
   runApp(const CashTrackApp());
 }
