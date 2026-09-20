@@ -414,7 +414,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
               setState(() {
                 result =
-                    'EMI: ₹${emi.toStringAsFixed(2)} • ${months} months';
+                    'EMI: ₹${emi.toStringAsFixed(2)} • $months months';
               });
               saveHistory(result);
             },
