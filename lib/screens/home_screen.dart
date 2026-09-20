@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/transaction_model.dart';
 import 'add_transaction_screen.dart';
+import 'calculator_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
 
@@ -246,6 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
 
+const SizedBox(height: 12),            _quickAction(              icon: Icons.calculate_rounded,              title: 'Calculator',              color: Colors.blue,              onTap: () {                Navigator.push(                  context,                  MaterialPageRoute(                    builder: (_) => const CalculatorScreen(),                  ),                );              },            ),
             const SizedBox(height: 24),
 
             Row(
