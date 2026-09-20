@@ -22,7 +22,7 @@ class GoogleAuthService {
       );
 
       return await _auth.signInWithCredential(credential);
-    } on GoogleSignInException {
+    } on GoogleSignInException catch (e) { print("GOOGLE_SIGN_IN_ERROR: $e");
       return null;
     } on FirebaseAuthException {
       return null;
