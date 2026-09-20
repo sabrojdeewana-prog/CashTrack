@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -24,7 +23,6 @@ class GoogleAuthService {
 
       return await _auth.signInWithCredential(credential);
     } on GoogleSignInException catch (e) { throw Exception("GOOGLE_SIGN_IN_ERROR: $e");
-      return null;
     } on FirebaseAuthException {
       return null;
     } catch (_) {
