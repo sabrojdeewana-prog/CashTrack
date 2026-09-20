@@ -27,19 +27,25 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
-                    final result =
-                        await GoogleAuthService.signInWithGoogle();
+                    try {
+                      await GoogleAuthService.signInWithGoogle();
 
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            result != null
-                                ? 'Google Login successful'
-                                : 'Google Login cancelled or failed',
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Google Login successful'),
                           ),
-                        ),
-                      );
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            duration: const Duration(seconds: 15),
+                            content: Text(e.toString()),
+                          ),
+                        );
+                      }
                     }
                   },
                 )
@@ -57,7 +63,6 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
               ],
-
               if (isAdmin)
                 ListTile(
                   leading: const Icon(Icons.admin_panel_settings),
@@ -73,7 +78,6 @@ class SettingsScreen extends StatelessWidget {
                     );
                   },
                 ),
-
               const ListTile(
                 leading: Icon(Icons.storage),
                 title: Text('Local Storage'),
