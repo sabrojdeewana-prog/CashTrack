@@ -3,30 +3,23 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class GoogleAuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
-  static final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-  static bool _initialized = false;
-
-  static Future<void> initialize() async {
-    if (_initialized) return;
-
-    await _googleSignIn.initialize(
-      serverClientId:
-          '85634229200-litehps7csgknvc3nvbrhcii75nodftj.apps.googleusercontent.com',
-    );
-
-    _initialized = true;
-  }
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId:
+        '85634229200-litehps7csgknvc3nvbrhcii75nodftj.apps.googleusercontent.com',
+  );
 
   static Future<UserCredential> signInWithGoogle() async {
     try {
-      await initialize();
+      final GoogleSignInAccount? googleUser =
+          await _googleSignIn.signIn();
 
-      final GoogleSignInAccount googleUser =
-          await _googleSignIn.authenticate();
+      if (googleUser == null) {
+        throw Exception('GOOGLE_LOGIN_CANCELLED');
+      }
 
       final GoogleSignInAuthentication googleAuth =
-          googleUser.authentication;
+          await googleUser.authentication;
 
       final String? idToken = googleAuth.idToken;
 
@@ -36,15 +29,12 @@ class GoogleAuthService {
         );
       }
 
-      final credential = GoogleAuthProvider.credential(
+      final OAuthCredential credential =
+          GoogleAuthProvider.credential(
         idToken: idToken,
       );
 
       return await _auth.signInWithCredential(credential);
-    } on GoogleSignInException catch (e) {
-      throw Exception(
-        'GOOGLE_SIGN_IN_ERROR: code=${e.code}, message=${e.description}',
-      );
     } on FirebaseAuthException catch (e) {
       throw Exception(
         'FIREBASE_AUTH_ERROR: code=${e.code}, message=${e.message}',
