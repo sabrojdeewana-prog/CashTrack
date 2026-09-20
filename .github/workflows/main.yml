@@ -30,7 +30,7 @@ jobs:
 
       - name: Configure Firebase
         run: |
-          cp google-services.json android/app/google-services.json
+          git show HEAD:android/app/google-services.json > android/app/google-services.json
 
           if [ -f android/settings.gradle.kts ]; then
             sed -i '/plugins {/a\    id("com.google.gms.google-services") version "4.4.2" apply false' android/settings.gradle.kts
