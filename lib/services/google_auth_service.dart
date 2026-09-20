@@ -9,6 +9,7 @@ class GoogleAuthService {
         '85634229200-litehps7csgknvc3nvbrhcii75nodftj.apps.googleusercontent.com',
   );
 
+  static Future<void> initialize() async {}
   static Future<UserCredential> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser =
