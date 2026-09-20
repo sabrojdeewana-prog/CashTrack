@@ -54,7 +54,9 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
       - name: Show APK SHA-1
-        run: find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1 | xargs -I{} {} verify --print-certs build/app/outputs/flutter-apk/app-release.apk
+        run: |
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
