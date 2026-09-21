@@ -84,15 +84,50 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Feedback & Support'),
-        content: const Text(
-          'For feedback, support or questions, contact us at:\n\n'
-          'Sabrojalam54321@gmail.com',
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.10),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.support_agent, color: Colors.green),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(child: Text("Feedback & Support")),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Need help or want to share feedback?",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 8),
+            Text("Contact our support team using the email below."),
+            SizedBox(height: 18),
+            Text(
+              "Support Email",
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+            ),
+            SizedBox(height: 6),
+            SelectableText(
+              "Sabrojalam54321@gmail.com",
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            icon: const Icon(Icons.close),
+            label: const Text("Close"),
           ),
         ],
       ),
