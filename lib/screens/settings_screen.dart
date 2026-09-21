@@ -92,7 +92,7 @@ class SettingsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.10),
+                color: Colors.green.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.support_agent, color: Colors.green),
