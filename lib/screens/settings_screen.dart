@@ -167,6 +167,11 @@ class SettingsScreen extends StatelessWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showContact(context),
               ),
+              const ListTile(
+                leading: Icon(Icons.system_update_outlined),
+                title: Text('App Version'),
+                subtitle: Text('CashTrack 1.0.0'),
+              ),
             ],
           );
         },
