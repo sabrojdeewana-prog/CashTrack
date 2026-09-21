@@ -84,9 +84,9 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Contact & Support'),
+        title: const Text('Feedback & Support'),
         content: const Text(
-          'For support, feedback or questions, contact us at:\n\n'
+          'For feedback, support or questions, contact us at:\n\n'
           'Sabrojalam54321@gmail.com',
         ),
         actions: [
@@ -162,7 +162,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.email_outlined),
-                title: const Text('Contact & Support'),
+                title: const Text('Feedback & Support'),
                 subtitle: Text(supportEmail),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showContact(context),
