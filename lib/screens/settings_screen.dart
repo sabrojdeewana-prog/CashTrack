@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'admin_panel_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -81,9 +82,10 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showContact(BuildContext context) {
+    final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -101,37 +103,78 @@ class SettingsScreen extends StatelessWidget {
             const Expanded(child: Text("Feedback & Support")),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "Need help or want to share feedback?",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 8),
-            Text("Contact our support team using the email below."),
-            SizedBox(height: 18),
-            Text(
-              "Support Email",
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+            const SizedBox(height: 8),
+            const Text("Write your feedback below and send it to our support team."),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              maxLines: 5,
+              decoration: InputDecoration(
+                hintText: "Write your feedback here...",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.message_outlined),
+              ),
             ),
-            SizedBox(height: 6),
-            SelectableText(
-              "Sabrojalam54321@gmail.com",
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            const SizedBox(height: 12),
+            const Text(
+              "Support: Sabrojalam54321@gmail.com",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
         actions: [
-          TextButton.icon(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-            label: const Text("Close"),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("Close"),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              final message = controller.text.trim();
+              if (message.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please write your feedback first.")),
+                );
+                return;
+              }
+
+              final uri = Uri(
+                scheme: "mailto",
+                path: supportEmail,
+                queryParameters: {
+                  "subject": "CashTrack Feedback",
+                  "body": message,
+                },
+              );
+
+              final launched = await launchUrl(
+                uri,
+                mode: LaunchMode.externalApplication,
+              );
+
+              if (launched && dialogContext.mounted) {
+                Navigator.pop(dialogContext);
+              } else if (!launched && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("No email app found on this device.")),
+                );
+              }
+            },
+            icon: const Icon(Icons.send),
+            label: const Text("Send Feedback"),
           ),
         ],
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   @override
