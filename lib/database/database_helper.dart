@@ -23,12 +23,28 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute(
             "ALTER TABLE transactions ADD COLUMN person_name TEXT NOT NULL DEFAULT ''",
           );
+        }
+
+        if (oldVersion < 3) {
+          final columns = await db.rawQuery(
+            "PRAGMA table_info(transactions)",
+          );
+
+          final hasPersonName = columns.any(
+            (column) => column['name'] == 'person_name',
+          );
+
+          if (!hasPersonName) {
+            await db.execute(
+              "ALTER TABLE transactions ADD COLUMN person_name TEXT NOT NULL DEFAULT ''",
+            );
+          }
         }
       },
       onCreate: (db, version) async {
