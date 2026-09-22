@@ -16,6 +16,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<CashTransaction> items = [];
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   double get income =>
       items.where((e) => e.type == 'income').fold(0, (s, e) => s + e.amount);
