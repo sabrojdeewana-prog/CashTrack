@@ -303,7 +303,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
       case 6:
         final profit = b - a;
-        final percent = a == 0 ? 0 : profit / a * 100;
+        final double percent = a == 0 ? 0.0 : profit / a * 100.0;
 
         text =
             '${profit >= 0 ? "Profit" : "Loss"}: ₹${formatNumber(profit.abs())} • ${formatNumber(percent.abs())}%';
