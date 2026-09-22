@@ -2,9 +2,47 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'admin_panel_screen.dart';
+import '../services/app_lock_service.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _appLockEnabled = false;
+  bool _loadingLock = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppLock();
+  }
+
+  Future<void> _loadAppLock() async {
+    final enabled = await AppLockService.isEnabled();
+    if (!mounted) return;
+    setState(() {
+      _appLockEnabled = enabled;
+      _loadingLock = false;
+    });
+  }
+
+  Future<void> _toggleAppLock(bool value) async {
+    final authenticated = await AppLockService.authenticate();
+    if (!authenticated) return;
+
+    if (value) {
+      await AppLockService.enable();
+    } else {
+      await AppLockService.disable();
+    }
+
+    if (!mounted) return;
+    setState(() => _appLockEnabled = value);
+  }
 
   static const String supportEmail = 'Sabrojalam54321@gmail.com';
 
@@ -224,6 +262,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const Divider(),
+SwitchListTile(                secondary: const Icon(Icons.lock_outline),                title: const Text('App Lock'),                subtitle: Text(                  _loadingLock                      ? 'Checking security status...'                      : _appLockEnabled                          ? 'Protected with device authentication'                          : 'Protect CashTrack with device security',                ),                value: _appLockEnabled,                onChanged: _loadingLock ? null : _toggleAppLock,              ),
               ListTile(
                 leading: const Icon(Icons.info_outline),
                 title: const Text('About CashTrack'),

@@ -47,6 +47,23 @@ jobs:
             sed -i '/plugins {/a\    id "com.google.gms.google-services"' android/app/build.gradle
           fi
 
+      - name: Configure biometric authentication
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q "android.permission.USE_BIOMETRIC" "$MANIFEST"; then
+            sed -i '/<manifest /a\    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>' "$MANIFEST"
+          fi
+
+          ACTIVITY=$(find android/app/src/main -type f \( -name "MainActivity.kt" -o -name "MainActivity.java" \) | head -1)
+          if [[ "$ACTIVITY" == *.kt ]]; then
+            sed -i 's/import io.flutter.embedding.android.FlutterActivity/import io.flutter.embedding.android.FlutterFragmentActivity/' "$ACTIVITY"
+            sed -i 's/extends FlutterActivity/extends FlutterFragmentActivity/' "$ACTIVITY"
+            sed -i 's/: FlutterActivity()/: FlutterFragmentActivity()/' "$ACTIVITY"
+          elif [[ "$ACTIVITY" == *.java ]]; then
+            sed -i 's/import io.flutter.embedding.android.FlutterActivity;/import io.flutter.embedding.android.FlutterFragmentActivity;/' "$ACTIVITY"
+            sed -i 's/extends FlutterActivity/extends FlutterFragmentActivity/' "$ACTIVITY"
+          fi
+
       - name: Get dependencies
         run: flutter pub get
       - name: Generate app icons
