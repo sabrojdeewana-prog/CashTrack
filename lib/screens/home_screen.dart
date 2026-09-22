@@ -200,10 +200,6 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
           children: [
-            ),
-                ),
-              ),
-
             _balanceCard(balance),
 
             const SizedBox(height: 18),
