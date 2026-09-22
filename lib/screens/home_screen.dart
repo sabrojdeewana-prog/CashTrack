@@ -16,8 +16,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<CashTransaction> items = [];
-  final TextEditingController searchController = TextEditingController();
-  String searchQuery = '';
 
   double get income =>
       items.where((e) => e.type == 'income').fold(0, (s, e) => s + e.amount);
@@ -131,42 +129,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    searchController.dispose();
     super.dispose();
-  }
-
-  List<CashTransaction> get searchResults {
-    final q = searchQuery.trim().toLowerCase();
-    if (q.isEmpty) return items;
-
-    final terms = q
-        .replaceAll('₹', '')
-        .replaceAll(',', '')
-        .split(RegExp(r'\s+'))
-        .where((term) => term.isNotEmpty)
-        .toList();
-
-    return items.where((e) {
-      final searchable = [
-        e.personName,
-        e.category,
-        e.note,
-        e.amount.toStringAsFixed(0),
-        e.amount.toStringAsFixed(2),
-        e.type,
-      ].join(' ').toLowerCase().replaceAll(',', '').replaceAll('₹', '');
-
-      return terms.every((term) => searchable.contains(term));
-    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final balance = income - expense;
-    final results = searchResults;
-    final recentItems = searchQuery.trim().isEmpty
-        ? items.take(5).toList()
-        : results;
+    final recentItems = items.take(5).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
@@ -231,61 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
           children: [
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: searchController,
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search person, category, note or amount...',
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    color: Color(0xFF1565C0),
-                  ),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          onPressed: () {
-                            searchController.clear();
-                            setState(() {
-                              searchQuery = '';
-                            });
-                          },
-                          icon: const Icon(Icons.clear_rounded),
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                ),
-              ),
             ),
-
-            if (searchQuery.trim().isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  '${results.length} transaction${results.length == 1 ? '' : 's'} found',
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w700,
-                  ),
                 ),
               ),
 
@@ -398,16 +313,12 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _sectionHeader(
-                  title: searchQuery.trim().isEmpty
-                      ? 'Recent Transactions'
-                      : 'Search Results',
+                  title: 'Recent Transactions',
                   subtitle: recentItems.isEmpty
-                      ? 'No matching transactions'
-                      : searchQuery.trim().isEmpty
-                          ? 'Latest activity'
-                          : 'Matching transactions',
+                      ? 'No recent transactions'
+                      : 'Latest activity',
                 ),
-                if (items.isNotEmpty && searchQuery.trim().isEmpty)
+                if (items.isNotEmpty)
                   TextButton(
                     onPressed: () {
                       Navigator.push(
