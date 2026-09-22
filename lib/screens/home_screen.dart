@@ -139,13 +139,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final q = searchQuery.trim().toLowerCase();
     if (q.isEmpty) return items;
 
+    final terms = q
+        .replaceAll('₹', '')
+        .replaceAll(',', '')
+        .split(RegExp(r'\s+'))
+        .where((term) => term.isNotEmpty)
+        .toList();
+
     return items.where((e) {
-      final amountText = e.amount.toStringAsFixed(0);
-      return e.personName.toLowerCase().contains(q) ||
-          e.category.toLowerCase().contains(q) ||
-          e.note.toLowerCase().contains(q) ||
-          amountText.contains(q) ||
-          e.type.toLowerCase().contains(q);
+      final searchable = [
+        e.personName,
+        e.category,
+        e.note,
+        e.amount.toStringAsFixed(0),
+        e.amount.toStringAsFixed(2),
+        e.type,
+      ].join(' ').toLowerCase().replaceAll(',', '').replaceAll('₹', '');
+
+      return terms.every((term) => searchable.contains(term));
     }).toList();
   }
 
