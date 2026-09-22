@@ -1,4 +1,3 @@
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/material.dart';
 
 import '../database/database_helper.dart';
@@ -16,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  BannerAd? _bannerAd;
   static const Color navy = Color(0xFF172033);
   static const Color blue = Color(0xFF1565C0);
   static const Color green = Color(0xFF16A34A);
@@ -106,27 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  void _loadBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-      request: const AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) setState(() {});
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          _bannerAd = null;
-        },
-      ),
-    )..load();
-  }
-
   @override
   void initState() {
     super.initState();
-    _loadBannerAd();
     load();
   }
 
@@ -177,12 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return dateText(transaction.date);
   }
 
-
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,14 +231,6 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
           children: [
-            if (_bannerAd != null)
-              Container(
-                alignment: Alignment.center,
-                width: _bannerAd!.size.width.toDouble(),
-                height: _bannerAd!.size.height.toDouble(),
-                child: AdWidget(ad: _bannerAd!),
-              ),
-            const SizedBox(height: 16),
             _balanceCard(),
             const SizedBox(height: 20),
 
