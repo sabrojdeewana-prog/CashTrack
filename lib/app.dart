@@ -9,21 +9,6 @@ class CashTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.firebaseError != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('CashTrack Error')),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Text(
-              'Firebase initialization failed:\n\n${widget.firebaseError}',
-              style: const TextStyle(fontSize: 15),
-            ),
-          ),
-        ),
-      );
-    }
-
     return MaterialApp(
       title: 'CashTrack',
       debugShowCheckedModeBanner: false,
@@ -56,24 +41,41 @@ class _AppLockGateState extends State<AppLockGate> {
   }
 
   Future<void> _checkLock() async {
-    final enabled = await AppLockService.isEnabled();
+    if (widget.firebaseError != null) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _unlocked = false;
+      });
+      return;
+    }
 
-    if (!enabled) {
+    try {
+      final enabled = await AppLockService.isEnabled();
+
+      if (!enabled) {
+        if (!mounted) return;
+        setState(() {
+          _loading = false;
+          _unlocked = true;
+        });
+        return;
+      }
+
+      final authenticated = await AppLockService.authenticate();
+
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _unlocked = authenticated;
+      });
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _loading = false;
         _unlocked = true;
       });
-      return;
     }
-
-    final authenticated = await AppLockService.authenticate();
-
-    if (!mounted) return;
-    setState(() {
-      _loading = false;
-      _unlocked = authenticated;
-    });
   }
 
   Future<void> _unlock() async {
@@ -85,6 +87,23 @@ class _AppLockGateState extends State<AppLockGate> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.firebaseError != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('CashTrack Error'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Text(
+              'Firebase initialization failed:\n\n${widget.firebaseError}',
+              style: const TextStyle(fontSize: 15),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (_loading) {
       return const Scaffold(
         body: Center(
