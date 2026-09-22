@@ -23,7 +23,14 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            "ALTER TABLE transactions ADD COLUMN person_name TEXT NOT NULL DEFAULT ''",
+          );
+        }
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE transactions(
@@ -32,6 +39,7 @@ class DatabaseHelper {
             amount REAL NOT NULL,
             category TEXT NOT NULL,
             note TEXT NOT NULL,
+            person_name TEXT NOT NULL DEFAULT '',
             date TEXT NOT NULL
           )
         ''');

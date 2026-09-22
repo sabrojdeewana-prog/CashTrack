@@ -12,6 +12,7 @@ class AddTransactionScreen extends StatefulWidget {
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final amount = TextEditingController();
   final note = TextEditingController();
+  final personName = TextEditingController();
 
   String type = 'expense';
   String category = 'Food';
@@ -88,6 +89,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void dispose() {
     amount.dispose();
     note.dispose();
+    personName.dispose();
     super.dispose();
   }
 
@@ -109,6 +111,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         amount: value,
         category: category,
         note: note.text.trim(),
+        personName: personName.text.trim(),
         date: DateTime.now(),
       ),
     );
@@ -211,6 +214,30 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
               ),
             ),
+          ),
+
+          const SizedBox(height: 15),
+
+          TextField(
+            controller: personName,
+            decoration: InputDecoration(
+              labelText: 'Person / Party (optional)',
+              hintText: 'e.g. Rahul',
+              border: const OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
+              prefixIcon: const Icon(Icons.person_outline_rounded),
+              suffixIcon: personName.text.isNotEmpty
+                  ? IconButton(
+                      onPressed: () {
+                        personName.clear();
+                        setState(() {});
+                      },
+                      icon: const Icon(Icons.clear_rounded),
+                    )
+                  : null,
+            ),
+            onChanged: (_) => setState(() {}),
           ),
 
           const SizedBox(height: 15),
@@ -457,12 +484,36 @@ class _CategoryPickerState extends State<_CategoryPicker> {
           Expanded(
             child: filteredCategories.isEmpty
                 ? Center(
-                    child: Text(
-                      'No category found',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 48,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'No category found',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        if (searchController.text.trim().isNotEmpty)
+                          FilledButton.icon(
+                            onPressed: () {
+                              final custom =
+                                  searchController.text.trim();
+                              Navigator.pop(context, custom);
+                            },
+                            icon: const Icon(Icons.add_rounded),
+                            label: Text(
+                              'Add "${searchController.text.trim()}"',
+                            ),
+                          ),
+                      ],
                     ),
                   )
                 : ListView.builder(

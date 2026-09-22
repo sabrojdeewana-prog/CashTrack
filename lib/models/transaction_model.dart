@@ -4,6 +4,7 @@ class CashTransaction {
   final double amount;
   final String category;
   final String note;
+  final String personName;
   final DateTime date;
 
   const CashTransaction({
@@ -12,6 +13,7 @@ class CashTransaction {
     required this.amount,
     required this.category,
     required this.note,
+    this.personName = '',
     required this.date,
   });
 
@@ -21,6 +23,7 @@ class CashTransaction {
         'amount': amount,
         'category': category,
         'note': note,
+        'person_name': personName,
         'date': date.toIso8601String(),
       };
 
@@ -31,6 +34,7 @@ class CashTransaction {
       amount: (map['amount'] as num).toDouble(),
       category: map['category'] as String,
       note: (map['note'] as String?) ?? '',
+      personName: (map['person_name'] as String?) ?? '',
       date: DateTime.parse(map['date'] as String),
     );
   }
