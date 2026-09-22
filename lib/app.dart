@@ -3,10 +3,27 @@ import 'screens/home_screen.dart';
 import 'services/app_lock_service.dart';
 
 class CashTrackApp extends StatelessWidget {
-  const CashTrackApp({super.key});
+  final String? firebaseError;
+
+  const CashTrackApp({super.key, this.firebaseError});
 
   @override
   Widget build(BuildContext context) {
+    if (widget.firebaseError != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('CashTrack Error')),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Text(
+              'Firebase initialization failed:\n\n${widget.firebaseError}',
+              style: const TextStyle(fontSize: 15),
+            ),
+          ),
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'CashTrack',
       debugShowCheckedModeBanner: false,
@@ -14,13 +31,15 @@ class CashTrackApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const AppLockGate(),
+      home: AppLockGate(firebaseError: firebaseError),
     );
   }
 }
 
 class AppLockGate extends StatefulWidget {
-  const AppLockGate({super.key});
+  final String? firebaseError;
+
+  const AppLockGate({super.key, this.firebaseError});
 
   @override
   State<AppLockGate> createState() => _AppLockGateState();

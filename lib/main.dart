@@ -4,7 +4,14 @@ import 'app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
 
-  runApp(const CashTrackApp());
+  String? firebaseError;
+
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    firebaseError = e.toString();
+  }
+
+  runApp(CashTrackApp(firebaseError: firebaseError));
 }
