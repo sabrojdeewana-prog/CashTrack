@@ -128,9 +128,32 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  List<CashTransaction> get searchResults {
+    final q = searchQuery.trim().toLowerCase();
+    if (q.isEmpty) return items;
+
+    return items.where((e) {
+      final amountText = e.amount.toStringAsFixed(0);
+      return e.personName.toLowerCase().contains(q) ||
+          e.category.toLowerCase().contains(q) ||
+          e.note.toLowerCase().contains(q) ||
+          amountText.contains(q) ||
+          e.type.toLowerCase().contains(q);
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final balance = income - expense;
-    final recentItems = items.take(5).toList();
+    final results = searchResults;
+    final recentItems = searchQuery.trim().isEmpty
+        ? items.take(5).toList()
+        : results;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
@@ -195,6 +218,64 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
           children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search person, category, note or amount...',
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF1565C0),
+                  ),
+                  suffixIcon: searchQuery.isNotEmpty
+                      ? IconButton(
+                          onPressed: () {
+                            searchController.clear();
+                            setState(() {
+                              searchQuery = '';
+                            });
+                          },
+                          icon: const Icon(Icons.clear_rounded),
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+            ),
+
+            if (searchQuery.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  '${results.length} transaction${results.length == 1 ? '' : 's'} found',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+
             _balanceCard(balance),
 
             const SizedBox(height: 18),
@@ -304,12 +385,16 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _sectionHeader(
-                  title: 'Recent Transactions',
+                  title: searchQuery.trim().isEmpty
+                      ? 'Recent Transactions'
+                      : 'Search Results',
                   subtitle: recentItems.isEmpty
-                      ? 'No activity yet'
-                      : 'Latest activity',
+                      ? 'No matching transactions'
+                      : searchQuery.trim().isEmpty
+                          ? 'Latest activity'
+                          : 'Matching transactions',
                 ),
-                if (items.isNotEmpty)
+                if (items.isNotEmpty && searchQuery.trim().isEmpty)
                   TextButton(
                     onPressed: () {
                       Navigator.push(
