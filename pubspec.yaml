@@ -27,7 +27,6 @@ dependencies:
   local_auth: ^2.3.0
   flutter_secure_storage: ^10.3.4
 
-  google_mobile_ads: ^9.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

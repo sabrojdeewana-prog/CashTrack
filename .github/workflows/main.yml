@@ -35,9 +35,6 @@ jobs:
           elif [ -f android/app/build.gradle ]; then
             sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 36/' android/app/build.gradle
           fi
-      - name: Configure AdMob App ID
-        run: |
-          sed -i 's|</application>|<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-7879218515632096~9358581813" />\n    </application>|' android/app/src/main/AndroidManifest.xml
 
       - name: Configure Firebase
         run: |
