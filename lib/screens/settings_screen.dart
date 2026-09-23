@@ -1,8 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import 'admin_panel_screen.dart';
+import '../database/database_helper.dart';
 import '../services/app_lock_service.dart';
+import '../services/backup_service.dart';
+import '../services/csv_service.dart';
+import '../services/pdf_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,6 +19,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _appLockEnabled = false;
   bool _loadingLock = true;
+  bool _busy = false;
+
+  static const String supportEmail = 'Sabrojalam54321@gmail.com';
 
   @override
   void initState() {
@@ -23,7 +31,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadAppLock() async {
     final enabled = await AppLockService.isEnabled();
+
     if (!mounted) return;
+
     setState(() {
       _appLockEnabled = enabled;
       _loadingLock = false;
@@ -32,6 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _toggleAppLock(bool value) async {
     final authenticated = await AppLockService.authenticate();
+
     if (!authenticated) return;
 
     if (value) {
@@ -41,184 +52,483 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     if (!mounted) return;
-    setState(() => _appLockEnabled = value);
-  }
 
-  static const String supportEmail = 'Sabrojalam54321@gmail.com';
+    setState(() {
+      _appLockEnabled = value;
+    });
 
-  void _showAbout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('About CashTrack'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'CashTrack - Daily Expense Manager\n\n'
-            'CashTrack is a simple personal finance app designed to help you '
-            'track income, expenses, transactions and manage your daily money.\n\n'
-            'Your transaction data is stored locally on your device. '
-            'Use the Reports, Calculator and other available tools to manage '
-            'your finances more easily.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+    _showMessage(
+      value ? 'App Lock enabled.' : 'App Lock disabled.',
     );
   }
 
-  void _showTerms(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Terms & Conditions'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'Terms & Conditions\n\n'
-            '1. Acceptance\n'
-            'By using CashTrack, you agree to use the application responsibly '
-            'and in accordance with these terms.\n\n'
-            '2. Personal Use\n'
-            'CashTrack is intended for personal financial record keeping. '
-            'You are responsible for the accuracy of the information you enter.\n\n'
-            '3. Financial Information\n'
-            'CashTrack is a tracking and calculation tool. It does not provide '
-            'financial, investment, tax, legal or professional advice. '
-            'Always verify important financial decisions independently.\n\n'
-            '4. Data\n'
-            'Transaction information may be stored locally on your device. '
-            'You are responsible for maintaining access to your device and '
-            'keeping your information secure.\n\n'
-            '5. Calculations\n'
-            'Calculator, EMI, interest, GST and other results are provided '
-            'for informational purposes. Verify important calculations before '
-            'making financial decisions.\n\n'
-            '6. Availability\n'
-            'We may update, modify or improve CashTrack features from time to '
-            'time. Features may change without prior notice.\n\n'
-            '7. Limitation of Liability\n'
-            'CashTrack and its developers are not responsible for financial '
-            'losses, decisions or damages resulting from reliance on information '
-            'or calculations provided by the app.\n\n'
-            '8. Contact\n'
-            'For questions or support, contact us at:\n'
-            'Sabrojalam54321@gmail.com',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+  void _showMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message)),
+      );
   }
 
-  void _showContact(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
+  Future<void> _backup() async {
+    if (_busy) return;
+
+    setState(() => _busy = true);
+
+    try {
+      final success = await BackupService.exportBackup();
+
+      if (success) {
+        _showMessage('Backup saved successfully.');
+      }
+    } catch (e) {
+      _showMessage('Backup failed: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _restore() async {
+    if (_busy) return;
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.10),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.support_agent, color: Colors.green),
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Restore Backup?'),
+          content: const Text(
+            'Restoring a backup will replace your current transactions '
+            'with the transactions from the selected backup file.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
             ),
-            const SizedBox(width: 12),
-            const Expanded(child: Text("Feedback & Support")),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Restore'),
+            ),
           ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Need help or want to share feedback?",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            const Text("Write your feedback below and send it to our support team."),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              maxLines: 5,
-              decoration: InputDecoration(
-                hintText: "Write your feedback here...",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _busy = true);
+
+    try {
+      final count = await BackupService.restoreBackup();
+
+      if (count != null) {
+        _showMessage('$count transactions restored successfully.');
+      }
+    } catch (e) {
+      _showMessage('Restore failed: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _exportCsv() async {
+    if (_busy) return;
+
+    setState(() => _busy = true);
+
+    try {
+      final transactions = await DatabaseHelper.instance.getAll();
+      final success = await CsvService.export(transactions);
+
+      if (success) {
+        _showMessage('CSV report saved successfully.');
+      }
+    } catch (e) {
+      _showMessage('CSV export failed: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _exportPdf() async {
+    if (_busy) return;
+
+    setState(() => _busy = true);
+
+    try {
+      final transactions = await DatabaseHelper.instance.getAll();
+
+      await PdfService.createAndPrint(
+        transactions,
+        title: 'CashTrack Financial Report',
+      );
+
+      _showMessage('PDF report is ready to share.');
+    } catch (e) {
+      _showMessage('PDF export failed: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  void _showPremium() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.workspace_premium,
+                  size: 52,
+                  color: Colors.amber,
                 ),
-                prefixIcon: const Icon(Icons.message_outlined),
-              ),
+                const SizedBox(height: 10),
+                const Text(
+                  'CashTrack Premium',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Unlock the premium experience of CashTrack.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                _planTile(
+                  context: sheetContext,
+                  title: 'Monthly Plan',
+                  price: '₹99 / month',
+                  icon: Icons.calendar_month,
+                ),
+                const SizedBox(height: 12),
+                _planTile(
+                  context: sheetContext,
+                  title: 'Yearly Plan',
+                  price: '₹1099 / year',
+                  icon: Icons.star,
+                  highlighted: true,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Payment functionality will be available after '
+                  'a payment provider is connected.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            const Text(
-              "Support: Sabrojalam54321@gmail.com",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Close"),
           ),
-          FilledButton.icon(
-            onPressed: () async {
-              final message = controller.text.trim();
-              if (message.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please write your feedback first.")),
-                );
-                return;
-              }
+        );
+      },
+    );
+  }
 
-              final uri = Uri(
-                scheme: "mailto",
-                path: supportEmail,
-                queryParameters: {
-                  "subject": "CashTrack Feedback",
-                  "body": message,
-                },
+  Widget _planTile({
+    required BuildContext context,
+    required String title,
+    required String price,
+    required IconData icon,
+    bool highlighted = false,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: highlighted ? Colors.amber : Colors.grey.shade300,
+          width: highlighted ? 2 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            child: Icon(icon),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(price),
+              ],
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showMessage(
+                'Premium payment is not connected yet.',
               );
-
-              final launched = await launchUrl(
-                uri,
-                mode: LaunchMode.externalApplication,
-              );
-
-              if (launched && dialogContext.mounted) {
-                Navigator.pop(dialogContext);
-              } else if (!launched && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No email app found on this device.")),
-                );
-              }
             },
-            icon: const Icon(Icons.send),
-            label: const Text("Send Feedback"),
+            child: const Text('Choose'),
           ),
         ],
       ),
+    );
+  }
+
+  void _showAbout() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('About CashTrack'),
+          content: const SingleChildScrollView(
+            child: Text(
+              'CashTrack - Daily Expense Manager\n\n'
+              'CashTrack is a personal finance management app designed '
+              'to help you track income, expenses and transactions.\n\n'
+              'Features include transaction management, reports, monthly '
+              'overview, smart calculator, backup and restore, PDF/CSV '
+              'export and device security.\n\n'
+              'Your transaction records are stored locally on your device.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPrivacy() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Privacy Policy'),
+          content: const SingleChildScrollView(
+            child: Text(
+              'Privacy Policy\n\n'
+              'CashTrack is designed to keep your personal transaction '
+              'records on your device.\n\n'
+              'Transaction data entered into the app is stored locally '
+              'for the app to provide its financial tracking features.\n\n'
+              'You are responsible for keeping your device secure and '
+              'for maintaining backups of important information.\n\n'
+              'If you use online features such as account authentication, '
+              'those services may process information according to their '
+              'respective policies.\n\n'
+              'For questions about privacy, contact:\n'
+              'Sabrojalam54321@gmail.com',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showTerms() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Terms & Conditions'),
+          content: const SingleChildScrollView(
+            child: Text(
+              'Terms & Conditions\n\n'
+              '1. Acceptance\n'
+              'By using CashTrack, you agree to use the application '
+              'responsibly.\n\n'
+              '2. Personal Use\n'
+              'CashTrack is intended for personal financial record keeping. '
+              'You are responsible for the accuracy of information entered.\n\n'
+              '3. Financial Information\n'
+              'CashTrack is a tracking and calculation tool and does not '
+              'provide financial, investment, tax or legal advice.\n\n'
+              '4. Data\n'
+              'Transaction information may be stored locally on your device. '
+              'You are responsible for maintaining access to your device '
+              'and keeping your information secure.\n\n'
+              '5. Calculations\n'
+              'Calculator, EMI, interest, GST and other results are provided '
+              'for informational purposes. Verify important calculations.\n\n'
+              '6. Availability\n'
+              'Features may be updated, modified or removed from time to time.\n\n'
+              '7. Limitation of Liability\n'
+              'CashTrack and its developers are not responsible for financial '
+              'losses resulting from reliance on information or calculations '
+              'provided by the app.\n\n'
+              '8. Contact\n'
+              'Sabrojalam54321@gmail.com',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showContact() {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.support_agent, color: Colors.green),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Feedback & Support'),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Need help or want to share feedback?',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: 'Write your feedback here...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(Icons.message_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Support: Sabrojalam54321@gmail.com',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Close'),
+            ),
+            FilledButton.icon(
+              onPressed: () async {
+                final message = controller.text.trim();
+
+                if (message.isEmpty) {
+                  _showMessage('Please write your feedback first.');
+                  return;
+                }
+
+                final uri = Uri(
+                  scheme: 'mailto',
+                  path: supportEmail,
+                  queryParameters: {
+                    'subject': 'CashTrack Feedback',
+                    'body': message,
+                  },
+                );
+
+                final launched = await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+
+                if (launched && dialogContext.mounted) {
+                  Navigator.pop(dialogContext);
+                } else if (mounted) {
+                  _showMessage(
+                    'No email app found on this device.',
+                  );
+                }
+              },
+              icon: const Icon(Icons.send),
+              label: const Text('Send Feedback'),
+            ),
+          ],
+        );
+      },
     ).whenComplete(controller.dispose);
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _settingTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: _busy ? null : onTap,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
       body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -226,6 +536,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           return ListView(
             children: [
+              if (_busy)
+                const LinearProgressIndicator(),
+
+              _sectionTitle('Account'),
+
               if (user != null) ...[
                 ListTile(
                   leading: const Icon(Icons.account_circle),
@@ -235,16 +550,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   leading: const Icon(Icons.logout),
                   title: const Text('Sign out'),
+                  subtitle: const Text('Sign out from your CashTrack account'),
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
                   },
                 ),
-              ],
-              ListTile(
-                leading: const Icon(Icons.admin_panel_settings),
-                title: const Text('Admin Dashboard'),
-                subtitle: const Text('Open admin dashboard'),
-                trailing: const Icon(Icons.chevron_right),
+              ] else
+                const ListTile(
+                  leading: Icon(Icons.account_circle_outlined),
+                  title: Text('Not signed in'),
+                  subtitle: Text(
+                    'Sign in when account features are available',
+                  ),
+                ),
+
+              _sectionTitle('Admin & Security'),
+
+              _settingTile(
+                icon: Icons.admin_panel_settings,
+                title: 'Admin Dashboard',
+                subtitle: 'Open admin dashboard',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -254,41 +579,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 },
               ),
-              const ListTile(
-                leading: Icon(Icons.storage),
-                title: Text('Local Storage'),
+
+              SwitchListTile(
+                secondary: const Icon(Icons.lock_outline),
+                title: const Text('App Lock'),
                 subtitle: Text(
-                  'Your transactions stay on this device.',
+                  _loadingLock
+                      ? 'Checking security status...'
+                      : _appLockEnabled
+                          ? 'Protected with device authentication'
+                          : 'Protect CashTrack with device security',
                 ),
+                value: _appLockEnabled,
+                onChanged: _loadingLock || _busy
+                    ? null
+                    : _toggleAppLock,
               ),
-              const Divider(),
-SwitchListTile(                secondary: const Icon(Icons.lock_outline),                title: const Text('App Lock'),                subtitle: Text(                  _loadingLock                      ? 'Checking security status...'                      : _appLockEnabled                          ? 'Protected with device authentication'                          : 'Protect CashTrack with device security',                ),                value: _appLockEnabled,                onChanged: _loadingLock ? null : _toggleAppLock,              ),
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('About CashTrack'),
-                subtitle: const Text('About the app and its features'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showAbout(context),
+
+              _sectionTitle('Backup & Export'),
+
+              _settingTile(
+                icon: Icons.backup_outlined,
+                title: 'Backup Data',
+                subtitle: 'Save all transactions as a JSON backup',
+                onTap: _backup,
               ),
-              ListTile(
-                leading: const Icon(Icons.description_outlined),
-                title: const Text('Terms & Conditions'),
-                subtitle: const Text('Read the terms of using CashTrack'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showTerms(context),
+
+              _settingTile(
+                icon: Icons.restore_outlined,
+                title: 'Restore Backup',
+                subtitle: 'Restore transactions from a CashTrack backup',
+                onTap: _restore,
               ),
-              ListTile(
-                leading: const Icon(Icons.email_outlined),
-                title: const Text('Feedback & Support'),
-                subtitle: Text(supportEmail),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showContact(context),
+
+              _settingTile(
+                icon: Icons.table_chart_outlined,
+                title: 'Export CSV',
+                subtitle: 'Save your transactions as a CSV report',
+                onTap: _exportCsv,
               ),
+
+              _settingTile(
+                icon: Icons.picture_as_pdf_outlined,
+                title: 'Export PDF',
+                subtitle: 'Create and share a PDF financial report',
+                onTap: _exportPdf,
+              ),
+
+              _sectionTitle('Premium'),
+
+              _settingTile(
+                icon: Icons.workspace_premium_outlined,
+                title: 'CashTrack Premium',
+                subtitle: 'Monthly ₹99 • Yearly ₹1099',
+                onTap: _showPremium,
+              ),
+
+              _sectionTitle('Information'),
+
+              _settingTile(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                subtitle: 'Read how your data is handled',
+                onTap: _showPrivacy,
+              ),
+
+              _settingTile(
+                icon: Icons.description_outlined,
+                title: 'Terms & Conditions',
+                subtitle: 'Read the terms of using CashTrack',
+                onTap: _showTerms,
+              ),
+
+              _settingTile(
+                icon: Icons.info_outline,
+                title: 'About CashTrack',
+                subtitle: 'About the app and its features',
+                onTap: _showAbout,
+              ),
+
+              _settingTile(
+                icon: Icons.email_outlined,
+                title: 'Feedback & Support',
+                subtitle: supportEmail,
+                onTap: _showContact,
+              ),
+
               const ListTile(
                 leading: Icon(Icons.system_update_outlined),
                 title: Text('App Version'),
                 subtitle: Text('CashTrack 1.0.0'),
               ),
+
+              const SizedBox(height: 30),
             ],
           );
         },
