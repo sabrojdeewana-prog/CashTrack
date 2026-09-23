@@ -48,13 +48,6 @@ jobs:
             sed -i '/plugins {/a\    id "com.google.gms.google-services"' android/app/build.gradle
           fi
 
-      - name: Configure AdMob test App ID
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          if ! grep -q "com.google.android.gms.ads.APPLICATION_ID" "$MANIFEST"; then
-            sed -i '/<application /a\        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>' "$MANIFEST"
-          fi
-
       - name: Configure biometric authentication
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
