@@ -305,6 +305,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _planTile({
+    required BuildContext context,
+    required String title,
+    required String price,
+    required IconData icon,
+    bool highlighted = false,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: highlighted
+            ? Colors.green.withOpacity(0.08)
+            : Colors.grey.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: highlighted ? Colors.green : Colors.grey.shade300,
+          width: highlighted ? 1.5 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.green.withOpacity(0.12),
+            child: Icon(
+              icon,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  price,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(this.context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '$title selected. Payment provider is not connected yet.',
+                  ),
+                ),
+              );
+            },
+            child: const Text('Choose'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showAbout() {
     showDialog(
       context: context,
