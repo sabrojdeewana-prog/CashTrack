@@ -186,113 +186,122 @@ class _SettingsScreenState extends State<SettingsScreen> {
       isScrollControlled: true,
       showDragHandle: true,
       builder: (sheetContext) {
+        final benefits = [
+          'Advanced expense management',
+          'Unlimited transaction records',
+          'Detailed financial reports',
+          'PDF and CSV export tools',
+          'Backup and restore tools',
+          'Smart Calculator tools',
+          'Premium experience with future features',
+          'Priority access to new premium features',
+        ];
+
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.workspace_premium,
-                  size: 52,
-                  color: Colors.amber,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'CashTrack Premium',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                24,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Center(
+                    child: Icon(
+                      Icons.workspace_premium,
+                      size: 58,
+                      color: Colors.amber,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Unlock the premium experience of CashTrack.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                _planTile(
-                  context: sheetContext,
-                  title: 'Monthly Plan',
-                  price: '₹99 / month',
-                  icon: Icons.calendar_month,
-                ),
-                const SizedBox(height: 12),
-                _planTile(
-                  context: sheetContext,
-                  title: 'Yearly Plan',
-                  price: '₹1099 / year',
-                  icon: Icons.star,
-                  highlighted: true,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Payment functionality will be available after '
-                  'a payment provider is connected.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+                  const SizedBox(height: 10),
+                  const Center(
+                    child: Text(
+                      'CashTrack Premium',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  const Center(
+                    child: Text(
+                      'Get more tools and a better money-management experience.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  const Text(
+                    'Premium Benefits',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ...benefits.map(
+                    (benefit) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 21,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              benefit,
+                              style: const TextStyle(
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _planTile(
+                    context: sheetContext,
+                    title: 'Monthly Plan',
+                    price: '₹99 / month',
+                    icon: Icons.calendar_month,
+                  ),
+                  const SizedBox(height: 12),
+                  _planTile(
+                    context: sheetContext,
+                    title: 'Yearly Plan',
+                    price: '₹1099 / year',
+                    icon: Icons.star,
+                    highlighted: true,
+                  ),
+                  const SizedBox(height: 16),
+                  const Center(
+                    child: Text(
+                      'Payment will be connected when a payment provider '
+                      'is added to CashTrack.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _planTile({
-    required BuildContext context,
-    required String title,
-    required String price,
-    required IconData icon,
-    bool highlighted = false,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: highlighted ? Colors.amber : Colors.grey.shade300,
-          width: highlighted ? 2 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            child: Icon(icon),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(price),
-              ],
-            ),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showMessage(
-                'Premium payment is not connected yet.',
-              );
-            },
-            child: const Text('Choose'),
-          ),
-        ],
-      ),
     );
   }
 

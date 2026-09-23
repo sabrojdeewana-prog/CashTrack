@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import '../database/database_helper.dart';
 import '../models/transaction_model.dart';
@@ -20,6 +21,7 @@ class BackupService {
     final path = await FilePicker.platform.saveFile(
       dialogTitle: 'Save CashTrack Backup',
       fileName: 'cashtrack_backup.json',
+      bytes: Uint8List.fromList(utf8.encode(json)),
       type: FileType.custom,
       allowedExtensions: ['json'],
     );
