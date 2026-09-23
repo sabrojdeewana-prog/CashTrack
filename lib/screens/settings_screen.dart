@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -529,153 +528,129 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          final user = snapshot.data;
+      body: ListView(
+        children: [
+          if (_busy)
+            const LinearProgressIndicator(),
 
-          return ListView(
-            children: [
-              if (_busy)
-                const LinearProgressIndicator(),
+          _sectionTitle('Account'),
 
-              _sectionTitle('Account'),
+          const ListTile(
+            leading: Icon(Icons.account_circle_outlined),
+            title: Text('Account'),
+            subtitle: Text('Account features are currently unavailable'),
+          ),
 
-              if (user != null) ...[
-                ListTile(
-                  leading: const Icon(Icons.account_circle),
-                  title: Text(user.displayName ?? 'User'),
-                  subtitle: Text(user.email ?? ''),
+          _sectionTitle('Admin & Security'),
+
+          _settingTile(
+            icon: Icons.admin_panel_settings,
+            title: 'Admin Dashboard',
+            subtitle: 'Open admin dashboard',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AdminPanelScreen(),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: const Text('Sign out'),
-                  subtitle: const Text('Sign out from your CashTrack account'),
-                  onTap: () async {
-                    await FirebaseAuth.instance.signOut();
-                  },
-                ),
-              ] else
-                const ListTile(
-                  leading: Icon(Icons.account_circle_outlined),
-                  title: Text('Not signed in'),
-                  subtitle: Text(
-                    'Sign in when account features are available',
-                  ),
-                ),
+              );
+            },
+          ),
 
-              _sectionTitle('Admin & Security'),
+          SwitchListTile(
+            secondary: const Icon(Icons.lock_outline),
+            title: const Text('App Lock'),
+            subtitle: Text(
+              _loadingLock
+                  ? 'Checking security status...'
+                  : _appLockEnabled
+                      ? 'Protected with device authentication'
+                      : 'Protect CashTrack with device security',
+            ),
+            value: _appLockEnabled,
+            onChanged: _loadingLock || _busy
+                ? null
+                : _toggleAppLock,
+          ),
 
-              _settingTile(
-                icon: Icons.admin_panel_settings,
-                title: 'Admin Dashboard',
-                subtitle: 'Open admin dashboard',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminPanelScreen(),
-                    ),
-                  );
-                },
-              ),
+          _sectionTitle('Backup & Export'),
 
-              SwitchListTile(
-                secondary: const Icon(Icons.lock_outline),
-                title: const Text('App Lock'),
-                subtitle: Text(
-                  _loadingLock
-                      ? 'Checking security status...'
-                      : _appLockEnabled
-                          ? 'Protected with device authentication'
-                          : 'Protect CashTrack with device security',
-                ),
-                value: _appLockEnabled,
-                onChanged: _loadingLock || _busy
-                    ? null
-                    : _toggleAppLock,
-              ),
+          _settingTile(
+            icon: Icons.backup_outlined,
+            title: 'Backup Data',
+            subtitle: 'Save all transactions as a JSON backup',
+            onTap: _backup,
+          ),
 
-              _sectionTitle('Backup & Export'),
+          _settingTile(
+            icon: Icons.restore_outlined,
+            title: 'Restore Backup',
+            subtitle: 'Restore transactions from a CashTrack backup',
+            onTap: _restore,
+          ),
 
-              _settingTile(
-                icon: Icons.backup_outlined,
-                title: 'Backup Data',
-                subtitle: 'Save all transactions as a JSON backup',
-                onTap: _backup,
-              ),
+          _settingTile(
+            icon: Icons.table_chart_outlined,
+            title: 'Export CSV',
+            subtitle: 'Save your transactions as a CSV report',
+            onTap: _exportCsv,
+          ),
 
-              _settingTile(
-                icon: Icons.restore_outlined,
-                title: 'Restore Backup',
-                subtitle: 'Restore transactions from a CashTrack backup',
-                onTap: _restore,
-              ),
+          _settingTile(
+            icon: Icons.picture_as_pdf_outlined,
+            title: 'Export PDF',
+            subtitle: 'Create and share a PDF financial report',
+            onTap: _exportPdf,
+          ),
 
-              _settingTile(
-                icon: Icons.table_chart_outlined,
-                title: 'Export CSV',
-                subtitle: 'Save your transactions as a CSV report',
-                onTap: _exportCsv,
-              ),
+          _sectionTitle('Premium'),
 
-              _settingTile(
-                icon: Icons.picture_as_pdf_outlined,
-                title: 'Export PDF',
-                subtitle: 'Create and share a PDF financial report',
-                onTap: _exportPdf,
-              ),
+          _settingTile(
+            icon: Icons.workspace_premium_outlined,
+            title: 'CashTrack Premium',
+            subtitle: 'Monthly ₹99 • Yearly ₹1099',
+            onTap: _showPremium,
+          ),
 
-              _sectionTitle('Premium'),
+          _sectionTitle('Information'),
 
-              _settingTile(
-                icon: Icons.workspace_premium_outlined,
-                title: 'CashTrack Premium',
-                subtitle: 'Monthly ₹99 • Yearly ₹1099',
-                onTap: _showPremium,
-              ),
+          _settingTile(
+            icon: Icons.privacy_tip_outlined,
+            title: 'Privacy Policy',
+            subtitle: 'Read how your data is handled',
+            onTap: _showPrivacy,
+          ),
 
-              _sectionTitle('Information'),
+          _settingTile(
+            icon: Icons.description_outlined,
+            title: 'Terms & Conditions',
+            subtitle: 'Read the terms of using CashTrack',
+            onTap: _showTerms,
+          ),
 
-              _settingTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-                subtitle: 'Read how your data is handled',
-                onTap: _showPrivacy,
-              ),
+          _settingTile(
+            icon: Icons.info_outline,
+            title: 'About CashTrack',
+            subtitle: 'About the app and its features',
+            onTap: _showAbout,
+          ),
 
-              _settingTile(
-                icon: Icons.description_outlined,
-                title: 'Terms & Conditions',
-                subtitle: 'Read the terms of using CashTrack',
-                onTap: _showTerms,
-              ),
+          _settingTile(
+            icon: Icons.email_outlined,
+            title: 'Feedback & Support',
+            subtitle: supportEmail,
+            onTap: _showContact,
+          ),
 
-              _settingTile(
-                icon: Icons.info_outline,
-                title: 'About CashTrack',
-                subtitle: 'About the app and its features',
-                onTap: _showAbout,
-              ),
+          const ListTile(
+            leading: Icon(Icons.system_update_outlined),
+            title: Text('App Version'),
+            subtitle: Text('CashTrack 1.0.0'),
+          ),
 
-              _settingTile(
-                icon: Icons.email_outlined,
-                title: 'Feedback & Support',
-                subtitle: supportEmail,
-                onTap: _showContact,
-              ),
-
-              const ListTile(
-                leading: Icon(Icons.system_update_outlined),
-                title: Text('App Version'),
-                subtitle: Text('CashTrack 1.0.0'),
-              ),
-
-              const SizedBox(height: 30),
-            ],
-          );
-        },
-      ),
+          const SizedBox(height: 30),
+        ],
+      )      ),
     );
   }
 }
