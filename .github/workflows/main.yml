@@ -28,11 +28,6 @@ jobs:
           rm -rf android
           flutter create --platforms=android .
 
-      - name: Configure AdMob TEST App ID
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i '/<application /a\        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>' "$MANIFEST"
-
       - name: Set Android compile SDK
         run: |
           if [ -f android/app/build.gradle.kts ]; then

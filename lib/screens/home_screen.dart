@@ -6,7 +6,6 @@ import 'add_transaction_screen.dart';
 import 'calculator_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
-import '../widgets/test_banner_ad.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -430,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final positive = balance >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -503,7 +502,7 @@ class _HomeScreenState extends State<HomeScreen> {
             money(balance),
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 30,
+              fontSize: 34,
               fontWeight: FontWeight.w900,
               letterSpacing: -0.7,
             ),
@@ -518,7 +517,7 @@ class _HomeScreenState extends State<HomeScreen> {
               fontSize: 12,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
