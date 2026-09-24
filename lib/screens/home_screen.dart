@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 20),
 
-            _insightCard(),
+
 
             const SizedBox(height: 25),
 
@@ -384,6 +384,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 18),
 
             if (items.isNotEmpty) _monthlyOverview(),
+
+            const SizedBox(height: 14),
+            _insightCard(),
           ],
         ),
       ),
@@ -429,7 +432,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final positive = balance >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -454,8 +457,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             children: [
               Container(
-                width: 43,
-                height: 43,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(13),
@@ -463,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Icon(
                   Icons.account_balance_wallet_rounded,
                   color: Colors.white,
-                  size: 23,
+                  size: 21,
                 ),
               ),
               const SizedBox(width: 12),
@@ -472,7 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Available Balance',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -497,17 +500,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           Text(
             money(balance),
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 34,
+              fontSize: 29,
               fontWeight: FontWeight.w900,
               letterSpacing: -0.7,
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 3),
           Text(
             positive
                 ? 'Total income minus total expenses'
