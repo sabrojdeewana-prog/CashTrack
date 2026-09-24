@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'admin_panel_screen.dart';
+import 'admin_login_screen.dart';
 import '../database/database_helper.dart';
 import '../services/app_lock_service.dart';
 import '../services/backup_service.dart';
@@ -631,7 +631,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const AdminPanelScreen(),
+                  builder: (_) => const AdminLoginScreen(),
                 ),
               );
             },
