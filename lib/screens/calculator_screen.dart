@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../services/firebase_service.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -723,6 +724,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                           result = '';
                         });
 
+                        FirebaseService.calculatorToolUsed(tools[index]);
                         resetForm();
                       },
                     ),
