@@ -5,7 +5,7 @@ class FirebaseService {
 
   static Future<void> _recordEvent(
     String eventName, {
-    Map<String, dynamic>? data,
+    Map<String, Object>? data,
   }) async {
     try {
       await analytics.logEvent(
