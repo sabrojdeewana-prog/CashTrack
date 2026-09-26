@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/firebase_service.dart';
 import '../database/database_helper.dart';
 import '../models/transaction_model.dart';
 
@@ -115,6 +116,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         date: DateTime.now(),
       ),
     );
+    await FirebaseService.transactionAdded(type);
 
     if (mounted) {
       Navigator.pop(context, true);
