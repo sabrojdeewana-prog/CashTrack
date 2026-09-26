@@ -1,23 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class AdminPanelScreen extends StatelessWidget {
+class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
 
+  @override
+  State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+}
+
+class _AdminPanelScreenState extends State<AdminPanelScreen> {
   static const Color navy = Color(0xFF172033);
   static const Color blue = Color(0xFF1565C0);
   static const Color green = Color(0xFF16A34A);
-  static const Color red = Color(0xFFDC2626);
   static const Color orange = Color(0xFFF59E0B);
+  static const Color red = Color(0xFFDC2626);
+  static const Color purple = Color(0xFF7C3AED);
   static const Color background = Color(0xFFF5F7FB);
 
-  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  Stream<int> _count(String collection) {
-    return _firestore.collection(collection).snapshots().map((snapshot) {
-      return snapshot.size;
-    });
-  }
+  String period = 'Lifetime';
 
   @override
   Widget build(BuildContext context) {
@@ -27,109 +26,98 @@ class AdminPanelScreen extends StatelessWidget {
         backgroundColor: navy,
         foregroundColor: Colors.white,
         title: const Text(
-          'CashTrack Admin Dashboard',
+          'CashTrack Admin',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: false,
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            onPressed: () {},
+            onPressed: () => setState(() {}),
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await Future<void>.delayed(const Duration(milliseconds: 400));
+          setState(() {});
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _header(),
+            _hero(),
+            const SizedBox(height: 16),
+
+            _periodFilter(),
             const SizedBox(height: 18),
 
-            const Text(
+            _sectionTitle(
+              Icons.dashboard_rounded,
               'Dashboard Overview',
-              style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.bold,
-                color: navy,
-              ),
             ),
-            const SizedBox(height: 12),
-
-            _statsGrid(),
+            const SizedBox(height: 10),
+            _overviewGrid(),
 
             const SizedBox(height: 24),
-
             _sectionTitle(
               Icons.people_alt_rounded,
-              'Users',
+              'Users & Activity',
             ),
-            _usersSection(),
+            const SizedBox(height: 10),
+            _usersCard(),
 
-            const SizedBox(height: 22),
-
-            _sectionTitle(
-              Icons.receipt_long_rounded,
-              'Transactions',
-            ),
-            _transactionsSection(),
-
-            const SizedBox(height: 22),
-
+            const SizedBox(height: 24),
             _sectionTitle(
               Icons.analytics_rounded,
-              'Analytics',
+              'Real Analytics',
             ),
-            _analyticsSection(),
+            const SizedBox(height: 10),
+            _analyticsCard(),
 
-            const SizedBox(height: 22),
-
+            const SizedBox(height: 24),
             _sectionTitle(
-              Icons.download_rounded,
-              'Reports & Downloads',
+              Icons.calculate_rounded,
+              'Calculator Usage',
             ),
-            _downloadsSection(),
+            const SizedBox(height: 10),
+            _calculatorCard(),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
+            _sectionTitle(
+              Icons.receipt_long_rounded,
+              'Transactions & Reports',
+            ),
+            const SizedBox(height: 10),
+            _activityCard(),
 
+            const SizedBox(height: 24),
+            _sectionTitle(
+              Icons.store_rounded,
+              'Store & Download Statistics',
+            ),
+            const SizedBox(height: 10),
+            _storeCard(),
+
+            const SizedBox(height: 24),
             _sectionTitle(
               Icons.workspace_premium_rounded,
               'Premium',
             ),
-            _premiumSection(),
+            const SizedBox(height: 10),
+            _premiumCard(),
 
-            const SizedBox(height: 22),
-
-            _sectionTitle(
-              Icons.notifications_active_rounded,
-              'Notifications',
-            ),
-            _notificationsSection(),
-
-            const SizedBox(height: 22),
-
-            _sectionTitle(
-              Icons.settings_rounded,
-              'App Settings',
-            ),
-            _settingsSection(),
-
-            const SizedBox(height: 22),
-
+            const SizedBox(height: 24),
             _sectionTitle(
               Icons.security_rounded,
-              'Security',
+              'Admin & Security',
             ),
-            _securitySection(),
+            const SizedBox(height: 10),
+            _securityCard(),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 28),
 
             const Center(
               child: Text(
-                'CashTrack Admin • Private Dashboard',
+                'CashTrack Admin • Real-data dashboard',
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 12,
@@ -144,17 +132,19 @@ class AdminPanelScreen extends StatelessWidget {
     );
   }
 
-  Widget _header() {
+  Widget _hero() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: navy,
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [navy, blue],
+        ),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: const Row(
         children: [
           CircleAvatar(
-            radius: 29,
+            radius: 30,
             backgroundColor: Colors.white,
             child: Icon(
               Icons.admin_panel_settings_rounded,
@@ -162,7 +152,7 @@ class AdminPanelScreen extends StatelessWidget {
               size: 34,
             ),
           ),
-          SizedBox(width: 15),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,16 +170,27 @@ class AdminPanelScreen extends StatelessWidget {
                   'sabrojalam54321@gmail.com',
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 13,
+                    fontSize: 12,
                   ),
                 ),
                 SizedBox(height: 7),
-                Text(
-                  'Live Firebase Dashboard',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 9,
+                      color: Colors.greenAccent,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'Admin session active',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -199,93 +200,396 @@ class AdminPanelScreen extends StatelessWidget {
     );
   }
 
-  Widget _statsGrid() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final columns = width >= 700 ? 4 : 2;
-
-        return GridView.count(
-          crossAxisCount: columns,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.45,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+  Widget _periodFilter() {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
           children: [
-            _liveStat(
-              title: 'Total Users',
-              icon: Icons.people_alt_rounded,
-              color: blue,
-              stream: _count('users'),
+            const Icon(Icons.date_range_rounded, color: blue),
+            const SizedBox(width: 10),
+            const Text(
+              'Period',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            _liveStat(
-              title: 'Transactions',
-              icon: Icons.receipt_long_rounded,
-              color: green,
-              stream: _count('transactions'),
-            ),
-            _liveStat(
-              title: 'Downloads',
-              icon: Icons.download_rounded,
-              color: orange,
-              stream: _count('report_downloads'),
-            ),
-            _liveStat(
-              title: 'Premium',
-              icon: Icons.workspace_premium_rounded,
-              color: red,
-              stream: _count('premium_users'),
+            const Spacer(),
+            DropdownButton<String>(
+              value: period,
+              underline: const SizedBox(),
+              items: const [
+                DropdownMenuItem(
+                  value: 'Today',
+                  child: Text('Today'),
+                ),
+                DropdownMenuItem(
+                  value: '7 Days',
+                  child: Text('7 Days'),
+                ),
+                DropdownMenuItem(
+                  value: '30 Days',
+                  child: Text('30 Days'),
+                ),
+                DropdownMenuItem(
+                  value: 'Lifetime',
+                  child: Text('Lifetime'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => period = value);
+                }
+              },
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _liveStat({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required Stream<int> stream,
-  }) {
+  Widget _overviewGrid() {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1.45,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _metricCard(
+          'Active Users',
+          'Analytics',
+          Icons.people_alt_rounded,
+          blue,
+        ),
+        _metricCard(
+          'App Opens',
+          'Analytics',
+          Icons.login_rounded,
+          green,
+        ),
+        _metricCard(
+          'First Opens',
+          'Analytics',
+          Icons.rocket_launch_rounded,
+          purple,
+        ),
+        _metricCard(
+          'Events',
+          'Analytics',
+          Icons.insights_rounded,
+          orange,
+        ),
+      ],
+    );
+  }
+
+  Widget _metricCard(
+    String title,
+    String source,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: StreamBuilder<int>(
-          stream: stream,
-          builder: (context, snapshot) {
-            final value = snapshot.hasError
-                ? '—'
-                : snapshot.hasData
-                    ? '${snapshot.data}'
-                    : '...';
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: color, size: 27),
-                const Spacer(),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            );
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 27),
+            const Spacer(),
+            const Text(
+              'Not connected',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              source,
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _usersCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _infoTile(
+            Icons.people_alt_rounded,
+            'Active users',
+            'Firebase Analytics data source',
+            blue,
+          ),
+          _infoTile(
+            Icons.person_add_alt_1_rounded,
+            'New users / first opens',
+            'Firebase Analytics data source',
+            green,
+          ),
+          _infoTile(
+            Icons.access_time_rounded,
+            'Recent activity',
+            'Analytics event timeline',
+            purple,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _analyticsCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _infoTile(
+            Icons.cloud_done_rounded,
+            'Firebase Analytics',
+            'Connected',
+            green,
+          ),
+          _infoTile(
+            Icons.storage_rounded,
+            'BigQuery export',
+            'Daily export configured',
+            blue,
+          ),
+          _infoTile(
+            Icons.sync_rounded,
+            'Data availability',
+            'Initial export may take time',
+            orange,
+          ),
+          _infoTile(
+            Icons.lock_rounded,
+            'Analytics access',
+            'Secure backend connection required for in-app raw data',
+            red,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _calculatorCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _infoTile(
+            Icons.calculate_rounded,
+            'Calculator usage',
+            'Tracking event: calculator_tool_used',
+            blue,
+          ),
+          _infoTile(
+            Icons.bar_chart_rounded,
+            'Most used tool',
+            'Real Analytics data',
+            green,
+          ),
+          _infoTile(
+            Icons.history_rounded,
+            'Usage history',
+            'Daily / 7 Days / 30 Days / Lifetime',
+            purple,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _activityCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _infoTile(
+            Icons.receipt_long_rounded,
+            'Transactions',
+            'Tracking event: transaction_added',
+            green,
+          ),
+          _infoTile(
+            Icons.picture_as_pdf_rounded,
+            'PDF reports',
+            'Tracking event: report_downloaded',
+            orange,
+          ),
+          _infoTile(
+            Icons.timeline_rounded,
+            'Activity timeline',
+            'Real Analytics event data',
+            blue,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _storeCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _storeRow(
+            Icons.play_arrow_rounded,
+            'Google Play',
+          ),
+          _storeRow(
+            Icons.shopping_bag_rounded,
+            'Amazon Appstore',
+          ),
+          _storeRow(
+            Icons.storefront_rounded,
+            'Samsung Galaxy Store',
+          ),
+          _storeRow(
+            Icons.download_rounded,
+            'Direct APK',
+          ),
+          const Divider(height: 1),
+          const ListTile(
+            leading: Icon(
+              Icons.info_outline_rounded,
+              color: orange,
+            ),
+            title: Text(
+              'Download statistics',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              'Store download numbers require official store reporting data. They will not be replaced with fake Firebase numbers.',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _storeRow(IconData icon, String title) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: blue.withValues(alpha: 0.10),
+        child: Icon(icon, color: blue),
+      ),
+      title: Text(title),
+      trailing: const Text(
+        'Not connected',
+        style: TextStyle(
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _premiumCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _infoTile(
+            Icons.workspace_premium_rounded,
+            'Premium users',
+            'Real purchase/subscription data required',
+            orange,
+          ),
+          _infoTile(
+            Icons.calendar_month_rounded,
+            'Monthly plan',
+            '₹99',
+            blue,
+          ),
+          _infoTile(
+            Icons.star_rounded,
+            'Yearly plan',
+            '₹1,099',
+            purple,
+          ),
+          const ListTile(
+            leading: Icon(
+              Icons.verified_outlined,
+              color: red,
+            ),
+            title: Text('Verification'),
+            subtitle: Text(
+              'Premium count will only be shown after real billing verification is connected.',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _securityCard() {
+    return Card(
+      elevation: 0,
+      child: Column(
+        children: [
+          _infoTile(
+            Icons.verified_user_rounded,
+            'Admin authorization',
+            'Protected admin account',
+            green,
+          ),
+          _infoTile(
+            Icons.email_rounded,
+            'Admin account',
+            'sabrojalam54321@gmail.com',
+            blue,
+          ),
+          _infoTile(
+            Icons.security_rounded,
+            'Dashboard security',
+            'Admin-only screen',
+            purple,
+          ),
+          _infoTile(
+            Icons.warning_amber_rounded,
+            'Server-side security',
+            'Backend authorization still required',
+            orange,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoTile(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+  ) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: color.withValues(alpha: 0.10),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Text(subtitle),
     );
   }
 
@@ -303,208 +607,6 @@ class AdminPanelScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _usersSection() {
-    return Card(
-      child: Column(
-        children: [
-          _dataRow(
-            Icons.people_alt_rounded,
-            'Registered users',
-            _count('users'),
-          ),
-          _dataRow(
-            Icons.person_add_alt_1_rounded,
-            'New user records',
-            _count('users'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.info_outline_rounded),
-            title: Text('Firebase Authentication users'),
-            subtitle: Text(
-              'Full Auth user count will be connected through Admin SDK.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _transactionsSection() {
-    return Card(
-      child: Column(
-        children: [
-          _dataRow(
-            Icons.receipt_long_rounded,
-            'Total transaction records',
-            _count('transactions'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.insights_rounded),
-            title: Text('Transaction activity'),
-            subtitle: Text(
-              'Live data will appear when transaction records are stored in Firestore.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _analyticsSection() {
-    return Card(
-      child: Column(
-        children: [
-          _dataRow(
-            Icons.event_rounded,
-            'Analytics events',
-            _count('analytics_events'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.analytics_rounded),
-            title: Text('Firebase Analytics'),
-            subtitle: Text(
-              'Detailed Analytics reporting will be connected separately.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _downloadsSection() {
-    return Card(
-      child: const ListTile(
-        leading: Icon(
-          Icons.download_rounded,
-          color: orange,
-        ),
-        title: Text('Report Downloads'),
-        subtitle: Text(
-          'Download tracking will be connected when the download system is implemented.',
-        ),
-      ),
-    );
-  }
-
-  Widget _premiumSection() {
-    return Card(
-      child: Column(
-        children: [
-          _dataRow(
-            Icons.workspace_premium_rounded,
-            'Premium users',
-            _count('premium_users'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.payments_outlined),
-            title: Text('Plans'),
-            subtitle: Text(
-              'Monthly ₹99 • Yearly ₹1,099',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _notificationsSection() {
-    return Card(
-      child: Column(
-        children: [
-          _dataRow(
-            Icons.notifications_active_rounded,
-            'Notification records',
-            _count('notifications'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.campaign_outlined),
-            title: Text('Notifications'),
-            subtitle: Text(
-              'Notification sending system will be connected later.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _settingsSection() {
-    return Card(
-      child: const Column(
-        children: [
-          ListTile(
-            leading: Icon(Icons.settings_rounded),
-            title: Text('Application configuration'),
-            subtitle: Text(
-              'Remote application controls will be added here.',
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.cloud_done_outlined),
-            title: Text('Firebase'),
-            subtitle: Text(
-              'Connected to CashTrack Firebase project.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _securitySection() {
-    return Card(
-      child: const Column(
-        children: [
-          ListTile(
-            leading: Icon(
-              Icons.verified_user_rounded,
-              color: green,
-            ),
-            title: Text('Admin authorization'),
-            subtitle: Text(
-              'Protected admin account: sabrojalam54321@gmail.com',
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.lock_outline_rounded),
-            title: Text('Firestore security'),
-            subtitle: Text(
-              'Admin data is restricted by Firestore rules.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dataRow(
-    IconData icon,
-    String title,
-    Stream<int> stream,
-  ) {
-    return StreamBuilder<int>(
-      stream: stream,
-      builder: (context, snapshot) {
-        final value = snapshot.hasData ? '${snapshot.data}' : '...';
-
-        return ListTile(
-          leading: CircleAvatar(
-            child: Icon(icon),
-          ),
-          title: Text(title),
-          trailing: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: navy,
-            ),
-          ),
-        );
-      },
     );
   }
 }
