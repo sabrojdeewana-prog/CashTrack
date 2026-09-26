@@ -621,22 +621,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: Text('Account features are currently unavailable'),
           ),
 
-          _sectionTitle('Admin & Security'),
-
-          _settingTile(
-            icon: Icons.admin_panel_settings,
-            title: 'Admin Dashboard',
-            subtitle: 'Open admin dashboard',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AdminLoginScreen(),
-                ),
-              );
-            },
-          ),
-
           SwitchListTile(
             secondary: const Icon(Icons.lock_outline),
             title: const Text('App Lock'),
@@ -722,10 +706,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _showContact,
           ),
 
-          const ListTile(
-            leading: Icon(Icons.system_update_outlined),
-            title: Text('App Version'),
-            subtitle: Text('CashTrack 1.0.0'),
+          GestureDetector(
+            onLongPress: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AdminLoginScreen(),
+                ),
+              );
+            },
+            child: const ListTile(
+              leading: Icon(Icons.system_update_outlined),
+              title: Text('App Version'),
+              subtitle: Text('CashTrack 1.0.0'),
+            ),
           ),
 
           const SizedBox(height: 30),
