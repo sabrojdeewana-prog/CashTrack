@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
 
+@override  void initState() {    super.initState();    _loadAnalytics();  }  Future<void> _loadAnalytics() async {    try {      final client = HttpClient();      final apiPeriod = period == 'Today' ? 'today' : period == '7 Days' ? '7days' : period == '30 Days' ? '30days' : 'lifetime';      final uri = Uri.parse('$analyticsUrl?period=$apiPeriod');      final request = await client.getUrl(uri);      final response = await request.close();      final body = await utf8.decoder.bind(response).join();      client.close();      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');      final data = jsonDecode(body) as Map<String, dynamic>;      setState(() {        analytics = data;        loadingAnalytics = false;        analyticsError = null;      });    } catch (e) {      setState(() {        loadingAnalytics = false;        analyticsError = e.toString();      });    }  }
   @override
   State<AdminPanelScreen> createState() => _AdminPanelScreenState();
 }
@@ -17,7 +20,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   static const Color background = Color(0xFFF5F7FB);
 
   String period = 'Lifetime';
+Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyticsError;  static const String analyticsUrl = 'https://script.google.com/macros/s/AKfycbwF8aLg9NWk20F9m7K0szXmAoXl4ehhXxE0GWcacHNwQDVojPCQadjZxHXPD-T4jGQHvQ/exec';
 
+@override  void initState() {    super.initState();    _loadAnalytics();  }  Future<void> _loadAnalytics() async {    try {      final client = HttpClient();      final apiPeriod = period == 'Today' ? 'today' : period == '7 Days' ? '7days' : period == '30 Days' ? '30days' : 'lifetime';      final uri = Uri.parse('$analyticsUrl?period=$apiPeriod');      final request = await client.getUrl(uri);      final response = await request.close();      final body = await utf8.decoder.bind(response).join();      client.close();      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');      final data = jsonDecode(body) as Map<String, dynamic>;      setState(() {        analytics = data;        loadingAnalytics = false;        analyticsError = null;      });    } catch (e) {      setState(() {        loadingAnalytics = false;        analyticsError = e.toString();      });    }  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +30,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       appBar: AppBar(
         backgroundColor: navy,
         foregroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           'CashTrack Admin',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -209,7 +214,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           children: [
             const Icon(Icons.date_range_rounded, color: blue),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'Period',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -237,7 +242,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ],
               onChanged: (value) {
                 if (value != null) {
-                  setState(() => period = value);
+                  setState(() => period = value); _loadAnalytics();
                 }
               },
             ),
@@ -257,24 +262,28 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       physics: const NeverScrollableScrollPhysics(),
       children: [
         _metricCard(
+          loadingAnalytics ? 'Loading...' : '${analytics?['activeUsers'] ?? 0}',
           'Active Users',
           'Analytics',
           Icons.people_alt_rounded,
           blue,
         ),
         _metricCard(
+          loadingAnalytics ? 'Loading...' : '${analytics?['appOpens'] ?? 0}',
           'App Opens',
           'Analytics',
           Icons.login_rounded,
           green,
         ),
         _metricCard(
+          loadingAnalytics ? 'Loading...' : '${analytics?['firstOpens'] ?? 0}',
           'First Opens',
           'Analytics',
           Icons.rocket_launch_rounded,
           purple,
         ),
         _metricCard(
+          loadingAnalytics ? 'Loading...' : '${analytics?['eventCount'] ?? 0}',
           'Events',
           'Analytics',
           Icons.insights_rounded,
@@ -285,6 +294,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 
   Widget _metricCard(
+    String value,
     String title,
     String source,
     IconData icon,
@@ -299,8 +309,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           children: [
             Icon(icon, color: color, size: 27),
             const Spacer(),
-            const Text(
-              'Not connected',
+            Text(
+              value,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -397,7 +407,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           _infoTile(
             Icons.calculate_rounded,
             'Calculator usage',
-            'Tracking event: calculator_tool_used',
+            loadingAnalytics ? 'Loading...' : 'Uses: ${analytics?['calculatorUses'] ?? 0}',
             blue,
           ),
           _infoTile(
@@ -425,13 +435,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           _infoTile(
             Icons.receipt_long_rounded,
             'Transactions',
-            'Tracking event: transaction_added',
+            loadingAnalytics ? 'Loading...' : 'Added: ${analytics?['transactions'] ?? 0}',
             green,
           ),
           _infoTile(
             Icons.picture_as_pdf_rounded,
             'PDF reports',
-            'Tracking event: report_downloaded',
+            loadingAnalytics ? 'Loading...' : 'Downloaded: ${analytics?['reports'] ?? 0}',
             orange,
           ),
           _infoTile(
@@ -492,8 +502,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         child: Icon(icon, color: blue),
       ),
       title: Text(title),
-      trailing: const Text(
-        'Not connected',
+      trailing: Text(
+        'Active Users',
         style: TextStyle(
           color: Colors.grey,
           fontWeight: FontWeight.w600,
