@@ -1,6 +1,28 @@
 rules_version = "2";
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    match /user_activity/{userId} {
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId;
+
+      allow read: if request.auth != null
+        && request.auth.token.email == "sabrojalam54321@gmail.com";
+
+      allow delete: if false;
+
+      match /days/{dayId} {
+        allow create, update: if request.auth != null
+          && request.auth.uid == userId;
+
+        allow read: if request.auth != null
+          && request.auth.token.email == "sabrojalam54321@gmail.com";
+
+        allow delete: if false;
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

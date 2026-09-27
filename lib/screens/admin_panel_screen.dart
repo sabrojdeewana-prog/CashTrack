@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -21,7 +20,83 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   String period = 'Lifetime';
 Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyticsError;  static const String analyticsUrl = 'https://script.google.com/macros/s/AKfycbwF8aLg9NWk20F9m7K0szXmAoXl4ehhXxE0GWcacHNwQDVojPCQadjZxHXPD-T4jGQHvQ/exec';
 
-@override  void initState() {    super.initState();    _loadAnalytics();  }  Future<void> _loadAnalytics() async {    try {      final client = HttpClient();      final apiPeriod = period == 'Today' ? 'today' : period == '7 Days' ? '7days' : period == '30 Days' ? '30days' : 'lifetime';      final uri = Uri.parse('$analyticsUrl?period=$apiPeriod');      final request = await client.getUrl(uri);      final response = await request.close();      final body = await utf8.decoder.bind(response).join();      client.close();      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');      final data = jsonDecode(body) as Map<String, dynamic>;      setState(() {        analytics = data;        loadingAnalytics = false;        analyticsError = null;      });    } catch (e) {      setState(() {        loadingAnalytics = false;        analyticsError = e.toString();      });    }  }
+@override  void initState() {    super.initState();    _loadAnalytics();  }  Future<void> _loadAnalytics() async {
+    setState(() {
+      loadingAnalytics = true;
+      analyticsError = null;
+    });
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final now = DateTime.now();
+
+      DateTime? startDate;
+      if (period == 'Today') {
+        startDate = DateTime(now.year, now.month, now.day);
+      } else if (period == '7 Days') {
+        startDate = now.subtract(const Duration(days: 7));
+      } else if (period == '30 Days') {
+        startDate = now.subtract(const Duration(days: 30));
+      }
+
+      final activeQuery = startDate == null
+          ? await firestore.collectionGroup('days').get()
+          : await firestore
+              .collectionGroup('days')
+              .where(
+                'activeAt',
+                isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+              )
+              .get();
+
+      final activeUserIds = <String>{};
+
+      for (final doc in activeQuery.docs) {
+        final userDoc = doc.reference.parent.parent;
+        if (userDoc != null) {
+          activeUserIds.add(userDoc.id);
+        }
+      }
+
+      final usersSnapshot =
+          await firestore.collection('user_activity').get();
+
+      int newUsers = 0;
+
+      for (final doc in usersSnapshot.docs) {
+        final createdAt = doc.data()['createdAt'];
+
+        if (createdAt is Timestamp) {
+          if (startDate == null ||
+              createdAt.toDate().isAfter(startDate) ||
+              createdAt.toDate().isAtSameMomentAs(startDate)) {
+            newUsers++;
+          }
+        }
+      }
+
+      final activityDays = activeQuery.docs.length;
+
+      setState(() {
+        analytics = {
+          'activeUsers': activeUserIds.length,
+          'appOpens': activityDays,
+          'firstOpens': newUsers,
+          'eventCount': activityDays,
+          'transactions': 0,
+          'reports': 0,
+        };
+        loadingAnalytics = false;
+        analyticsError = null;
+      });
+    } catch (e) {
+      setState(() {
+        loadingAnalytics = false;
+        analyticsError = e.toString();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
