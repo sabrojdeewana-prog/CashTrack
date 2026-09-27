@@ -45,6 +45,55 @@ class FirebaseService {
     }
   }
 
+  static Future<bool> checkDailyLimit(String key, int limit) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return true;
+
+      final isAdmin =
+          user.email?.toLowerCase() == "sabrojalam54321@gmail.com";
+      if (isAdmin) return true;
+
+      final premiumDoc =
+          await _firestore.collection("user_premium").doc(user.uid).get();
+      final premiumData = premiumDoc.data();
+      final premiumUntil = premiumData?["premiumUntil"];
+      final isPremium = premiumData?["isPremium"] == true &&
+          (premiumUntil is! Timestamp ||
+              premiumUntil.toDate().isAfter(DateTime.now()));
+
+      if (isPremium) return true;
+
+      final now = DateTime.now();
+      final dayId = [
+        now.year.toString().padLeft(4, "0"),
+        now.month.toString().padLeft(2, "0"),
+        now.day.toString().padLeft(2, "0"),
+      ].join("-");
+
+      final usageRef = _firestore
+          .collection("user_activity")
+          .doc(user.uid)
+          .collection("days")
+          .doc(dayId);
+
+      final usageDoc = await usageRef.get();
+      final count =
+          (usageDoc.data()?[key] as num?)?.toInt() ?? 0;
+
+      if (count >= limit) return false;
+
+      await usageRef.set(
+        {key: count + 1},
+        SetOptions(merge: true),
+      );
+
+      return true;
+    } catch (_) {
+      return true;
+    }
+  }
+
   static Future<void> _recordEvent(
     String eventName, {
     Map<String, Object>? data,

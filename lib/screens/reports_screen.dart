@@ -203,6 +203,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> exportCsv() async {
+    final allowed = await FirebaseService.checkDailyLimit("csvCount", 2);
+    if (allowed == false) {
+      _message("Free limit reached: 2 CSV exports per day. Upgrade to Premium.");
+      return;
+    }
     if (filteredItems.isEmpty) {
       _message('No transactions available for this report.');
       return;

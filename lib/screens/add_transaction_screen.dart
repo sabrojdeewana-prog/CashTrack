@@ -108,6 +108,58 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
 
+    final user = FirebaseAuth.instance.currentUser;
+    final isAdmin =
+        user?.email?.toLowerCase() == 'sabrojalam54321@gmail.com';
+
+    if (user != null && isAdmin == false) {
+      final premiumDoc = await FirebaseFirestore.instance
+          .collection('user_premium')
+          .doc(user.uid)
+          .get();
+
+      final premiumData = premiumDoc.data();
+      final premiumUntil = premiumData?['premiumUntil'];
+      final isPremium = premiumData?['isPremium'] == true &&
+          (premiumUntil is! Timestamp ||
+              premiumUntil.toDate().isAfter(DateTime.now()));
+
+      if (isPremium == false) {
+        final now = DateTime.now();
+        final dayId =
+            '${now.year.toString().padLeft(4, '0')}-'
+            '${now.month.toString().padLeft(2, '0')}-'
+            '${now.day.toString().padLeft(2, '0')}';
+
+        final usageRef = FirebaseFirestore.instance
+            .collection('user_activity')
+            .doc(user.uid)
+            .collection('days')
+            .doc(dayId);
+
+        final usageDoc = await usageRef.get();
+        final count =
+            (usageDoc.data()?['transactionCount'] as num?)?.toInt() ?? 0;
+
+        if (count >= 20) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Free limit reached: 20 transactions per day. Upgrade to Premium.',
+                ),
+              ),
+            );
+          }
+          return;
+        }
+
+        await usageRef.set(
+          {'transactionCount': count + 1},
+          SetOptions(merge: true),
+        );
+      }
+    }
     await DatabaseHelper.instance.insert(
       CashTransaction(
         type: type,

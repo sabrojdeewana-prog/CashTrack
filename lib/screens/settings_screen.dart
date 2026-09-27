@@ -139,6 +139,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _exportCsv() async {
+    final allowed = await FirebaseService.checkDailyLimit("csvCount", 2);
+    if (allowed == false) {
+      _showMessage("Free limit reached: 2 CSV exports per day. Upgrade to Premium.");
+      return;
+    }
     if (_busy) return;
 
     setState(() => _busy = true);
@@ -160,6 +165,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _exportPdf() async {
+    final allowed = await FirebaseService.checkDailyLimit("pdfCount", 1);
+    if (allowed == false) {
+      _showMessage("Free limit reached: 1 PDF per day. Upgrade to Premium.");
+      return;
+    }
     if (_busy) return;
 
     setState(() => _busy = true);
