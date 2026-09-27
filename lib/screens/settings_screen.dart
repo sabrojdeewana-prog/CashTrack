@@ -711,10 +711,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _sectionTitle('Account'),
 
-          const ListTile(
-            leading: Icon(Icons.account_circle_outlined),
-            title: Text('Account'),
-            subtitle: Text('Premium status will appear here.'),
+          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance.collection('user_premium').doc(FirebaseAuth.instance.currentUser?.uid).snapshots(),
+            builder: (context, snapshot) {
+              final data = snapshot.data?.data();
+              final active = data?['isPremium'] == true;
+              final plan = data?['plan']?.toString() ?? 'Premium';
+              final until = data?['premiumUntil'];
+              final expiry = until is Timestamp ? until.toDate().toString().split(' ').first : '';
+              return ListTile(
+                leading: Icon(active ? Icons.workspace_premium : Icons.account_circle_outlined, color: active ? Colors.amber : null),
+                title: Text(active ? '👑 PREMIUM ACTIVE' : 'Free Account', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(active ? ' • Valid until ' : 'Free plan • Upgrade to CashTrack Premium'),
+              );
+            },
           ),
 
           SwitchListTile(
