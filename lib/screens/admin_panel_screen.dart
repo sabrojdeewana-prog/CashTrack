@@ -80,10 +80,6 @@ Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyti
             const SizedBox(height: 24),
             _sectionTitle(
               Icons.calculate_rounded,
-              'Calculator Usage',
-            ),
-            const SizedBox(height: 10),
-            _calculatorCard(),
 
             const SizedBox(height: 24),
             _sectionTitle(
