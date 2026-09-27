@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'admin_login_screen.dart';
@@ -367,21 +369,107 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(this.context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '$title selected. Payment provider is not connected yet.',
-                  ),
-                ),
-              );
-            },
+          onPressed: () {
+            Navigator.pop(context);
+            final amount = title.contains('Yearly') ? 1099 : 99;
+            _submitPremiumRequest(this.context, title, amount);
+          },
             child: const Text('Choose'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _submitPremiumRequest(
+    BuildContext context,
+    String plan,
+    int amount,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login first.')),
+      );
+      return;
+    }
+
+    final controller = TextEditingController();
+
+    final reference = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text('$plan Premium'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Pay ₹$amount using UPI.'),
+              const SizedBox(height: 8),
+              const Text(
+                'UPI ID: 9892586581-3@ybl',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'Transaction / UTR ID',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (controller.text.trim().isNotEmpty) {
+                  Navigator.pop(dialogContext, controller.text.trim());
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (reference == null || reference.isEmpty) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('premium_requests').add({
+        'userId': user.uid,
+        'plan': plan,
+        'amount': amount,
+        'upiId': '9892586581-3@ybl',
+        'transactionReference': reference,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Payment request submitted. Admin verification pending.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Request failed: $e')),
+      );
+    }
   }
 
   void _showAbout() {

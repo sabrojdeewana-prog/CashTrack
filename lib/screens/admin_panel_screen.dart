@@ -579,11 +579,118 @@ Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyti
       elevation: 0,
       child: Column(
         children: [
-          _infoTile(
-            Icons.workspace_premium_rounded,
-            'Premium users',
-            'Real purchase/subscription data required',
-            orange,
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('premium_requests')
+                .where('status', isEqualTo: 'pending')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const ListTile(
+                  leading: CircularProgressIndicator(),
+                  title: Text('Premium requests'),
+                  subtitle: Text('Loading...'),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return ListTile(
+                  leading: const Icon(Icons.error_outline, color: red),
+                  title: const Text('Premium requests'),
+                  subtitle: Text('Error: ${snapshot.error}'),
+                );
+              }
+
+              final requests = snapshot.data?.docs ?? [];
+
+              return Column(
+                children: [
+                  _infoTile(
+                    Icons.workspace_premium_rounded,
+                    'Pending Premium requests',
+                    '${requests.length} request(s) waiting for verification',
+                    orange,
+                  ),
+                  if (requests.isEmpty)
+                    const ListTile(
+                      leading: Icon(
+                        Icons.check_circle_outline,
+                        color: green,
+                      ),
+                      title: Text('No pending requests'),
+                      subtitle: Text(
+                        'New payment requests will appear here.',
+                      ),
+                    ),
+                  ...requests.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final plan = data['plan']?.toString() ?? 'Premium';
+                    final amount = data['amount']?.toString() ?? '-';
+                    final userId = data['userId']?.toString() ?? '-';
+                    final reference =
+                        data['transactionReference']?.toString() ?? '-';
+
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          color: background,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              plan,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text('Amount: ₹$amount'),
+                            Text('User: $userId'),
+                            Text('Transaction/UTR: $reference'),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () =>
+                                        _updatePremiumRequest(
+                                      doc.id,
+                                      data,
+                                      false,
+                                    ),
+                                    icon: const Icon(Icons.close),
+                                    label: const Text('Reject'),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () =>
+                                        _updatePremiumRequest(
+                                      doc.id,
+                                      data,
+                                      true,
+                                    ),
+                                    icon: const Icon(Icons.check),
+                                    label: const Text('Approve'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              );
+            },
           ),
           _infoTile(
             Icons.calendar_month_rounded,
@@ -597,19 +704,70 @@ Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyti
             '₹1,099',
             purple,
           ),
-          const ListTile(
-            leading: Icon(
-              Icons.verified_outlined,
-              color: red,
-            ),
-            title: Text('Verification'),
-            subtitle: Text(
-              'Premium count will only be shown after real billing verification is connected.',
-            ),
-          ),
         ],
       ),
     );
+  }
+
+  Future<void> _updatePremiumRequest(
+    String requestId,
+    Map<String, dynamic> data,
+    bool approve,
+  ) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final userId = data['userId']?.toString();
+
+      if (userId == null || userId.isEmpty) {
+        throw Exception('User ID missing');
+      }
+
+      if (approve) {
+        final plan = data['plan']?.toString() ?? 'Monthly';
+        final days = plan.contains('Yearly') ? 365 : 30;
+        final premiumUntil = DateTime.now().toUtc().add(
+          Duration(days: days),
+        );
+
+        await firestore.collection('user_premium').doc(userId).set({
+          'isPremium': true,
+          'plan': plan,
+          'premiumUntil': Timestamp.fromDate(premiumUntil),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'approvedAt': FieldValue.serverTimestamp(),
+          'paymentReference':
+              data['transactionReference']?.toString() ?? '',
+        });
+
+        await firestore.collection('premium_requests').doc(requestId).update({
+          'status': 'approved',
+          'reviewedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await firestore.collection('premium_requests').doc(requestId).update({
+          'status': 'rejected',
+          'reviewedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            approve
+                ? 'Premium approved successfully.'
+                : 'Premium request rejected.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Action failed: $e')),
+      );
+    }
   }
 
   Widget _securityCard() {
