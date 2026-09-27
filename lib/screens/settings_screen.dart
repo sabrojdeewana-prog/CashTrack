@@ -714,7 +714,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const ListTile(
             leading: Icon(Icons.account_circle_outlined),
             title: Text('Account'),
-            subtitle: Text('Account features are currently unavailable'),
+            subtitle: Text('Premium status will appear here.'),
           ),
 
           SwitchListTile(
