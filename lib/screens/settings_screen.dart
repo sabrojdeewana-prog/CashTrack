@@ -270,6 +270,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
+                  Center(child: Image.asset('assets/images/cashtrack_upi_qr.png', width: 220, height: 220)),
+                  const SizedBox(height: 8),
+                  const Center(child: Text('UPI ID: 9892586581-3@ybl', style: TextStyle(fontWeight: FontWeight.bold))),
+                  const SizedBox(height: 18),
                   _planTile(
                     context: sheetContext,
                     title: 'Monthly Plan',
@@ -277,6 +281,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.calendar_month,
                   ),
                   const SizedBox(height: 12),
+                  Center(child: Image.asset('assets/images/cashtrack_upi_qr.png', width: 220, height: 220)),
+                  const SizedBox(height: 8),
+                  const Center(child: Text('UPI ID: 9892586581-3@ybl', style: TextStyle(fontWeight: FontWeight.bold))),
+                  const SizedBox(height: 18),
                   _planTile(
                     context: sheetContext,
                     title: 'Yearly Plan',
