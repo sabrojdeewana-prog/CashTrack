@@ -448,58 +448,53 @@ Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyti
   }
 
   Widget _storeCard() {
+    String value(String key) {
+      if (loadingAnalytics) return 'Loading...';
+      if (analytics == null) return 'Not connected';
+      return '${analytics![key] ?? 0}';
+    }
+
     return Card(
       elevation: 0,
       child: Column(
         children: [
-          _storeRow(
-            Icons.play_arrow_rounded,
-            'Google Play',
+          _infoTile(
+            Icons.people_alt_rounded,
+            'Active Users',
+            value('activeUsers'),
+            green,
           ),
-          _storeRow(
-            Icons.shopping_bag_rounded,
-            'Amazon Appstore',
-          ),
-          _storeRow(
-            Icons.storefront_rounded,
-            'Samsung Galaxy Store',
-          ),
-          _storeRow(
+          _infoTile(
             Icons.download_rounded,
-            'Direct APK',
+            'APK Downloads',
+            value('apkDownloads'),
+            blue,
+          ),
+          _infoTile(
+            Icons.play_arrow_rounded,
+            'Google Play Downloads',
+            value('googlePlayDownloads'),
+            purple,
+          ),
+          _infoTile(
+            Icons.shopping_bag_rounded,
+            'Amazon Appstore Downloads',
+            value('amazonDownloads'),
+            orange,
           ),
           const Divider(height: 1),
-          const ListTile(
-            leading: Icon(
-              Icons.info_outline_rounded,
-              color: orange,
-            ),
-            title: Text(
-              'Download statistics',
+          ListTile(
+            leading: const Icon(Icons.date_range_rounded),
+            title: const Text(
+              'Selected Period',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              'Store download numbers require official store reporting data. They will not be replaced with fake Firebase numbers.',
+            trailing: Text(
+              period,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _storeRow(IconData icon, String title) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: blue.withValues(alpha: 0.10),
-        child: Icon(icon, color: blue),
-      ),
-      title: Text(title),
-      trailing: Text(
-        'Active Users',
-        style: TextStyle(
-          color: Colors.grey,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }
