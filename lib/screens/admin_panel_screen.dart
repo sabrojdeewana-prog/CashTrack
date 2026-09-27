@@ -5,7 +5,6 @@ import 'dart:io';
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
 
-@override  void initState() {    super.initState();    _loadAnalytics();  }  Future<void> _loadAnalytics() async {    try {      final client = HttpClient();      final apiPeriod = period == 'Today' ? 'today' : period == '7 Days' ? '7days' : period == '30 Days' ? '30days' : 'lifetime';      final uri = Uri.parse('$analyticsUrl?period=$apiPeriod');      final request = await client.getUrl(uri);      final response = await request.close();      final body = await utf8.decoder.bind(response).join();      client.close();      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');      final data = jsonDecode(body) as Map<String, dynamic>;      setState(() {        analytics = data;        loadingAnalytics = false;        analyticsError = null;      });    } catch (e) {      setState(() {        loadingAnalytics = false;        analyticsError = e.toString();      });    }  }
   @override
   State<AdminPanelScreen> createState() => _AdminPanelScreenState();
 }
