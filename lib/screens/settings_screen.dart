@@ -722,19 +722,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _sectionTitle('Account'),
 
-          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance.collection('user_premium').doc(FirebaseAuth.instance.currentUser?.uid).snapshots(),
-            builder: (context, snapshot) {
-              final data = snapshot.data?.data();
-              final active = data?['isPremium'] == true;
-              final plan = data?['plan']?.toString() ?? 'Premium';
-              final until = data?['premiumUntil'];
-              final expiry = until is Timestamp ? until.toDate().toString().split(' ').first : '';
-              return ListTile(
-                leading: Icon(active ? Icons.workspace_premium : Icons.account_circle_outlined, color: active ? Colors.amber : null),
-                title: Text(active ? '👑 PREMIUM ACTIVE' : 'Free Account', style: const TextStyle(fontWeight: FontWeight.bold)),
-                onTap: _showPremium,
-                subtitle: Text(active ? '$plan • Valid until $expiry' : 'Free plan • Upgrade to CashTrack Premium'),
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, authSnapshot) {
+              final user = authSnapshot.data;
+
+              if (user == null) {
+                return const ListTile(
+                  leading: Icon(Icons.account_circle_outlined),
+                  title: Text(
+                    'Free Account',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text('Please login to view your Premium status'),
+                );
+              }
+
+              return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('user_premium')
+                    .doc(user.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  final data = snapshot.data?.data();
+                  final until = data?['premiumUntil'];
+
+                  final expired = until is Timestamp &&
+                      until.toDate().isBefore(DateTime.now());
+
+                  final active =
+                      data?['isPremium'] == true && expired == false;
+
+                  final plan =
+                      data?['plan']?.toString() ?? 'Premium';
+
+                  final expiry = until is Timestamp
+                      ? until.toDate().toString().split(' ').first
+                      : '';
+
+                  return ListTile(
+                    leading: Icon(
+                      active
+                          ? Icons.workspace_premium
+                          : Icons.account_circle_outlined,
+                      color: active ? Colors.amber : null,
+                    ),
+                    title: Text(
+                      active ? '👑 PREMIUM ACTIVE' : 'Free Account',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: _showPremium,
+                    subtitle: Text(
+                      active
+                          ? '$plan • Valid until $expiry'
+                          : 'Free plan • Upgrade to CashTrack Premium',
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -785,13 +831,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _exportPdf,
           ),
 
-          _sectionTitle('Premium'),
-
-          _settingTile(
-            icon: Icons.workspace_premium_outlined,
-            title: 'CashTrack Premium',
-            subtitle: 'Monthly ₹99 • Yearly ₹1099',
-            onTap: _showPremium,
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, authSnapshot) {
+              final user = authSnapshot.data;
+              if (user == null) return const SizedBox.shrink();
+              return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance.collection('user_premium').doc(user.uid).snapshots(),
+                builder: (context, snapshot) {
+                  final data = snapshot.data?.data();
+                  final until = data?['premiumUntil'];
+                  final expired = until is Timestamp && until.toDate().isBefore(DateTime.now());
+                  final active = data?['isPremium'] == true && expired == false;
+                  if (active) return const SizedBox.shrink();
+                  return Column(
+                    children: [
+                      _sectionTitle('Premium'),
+                      _settingTile(
+                        icon: Icons.workspace_premium_outlined,
+                        title: 'CashTrack Premium',
+                        subtitle: 'Monthly ₹99 • Yearly ₹1099',
+                        onTap: _showPremium,
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
 
           _sectionTitle('Information'),
