@@ -733,7 +733,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               return ListTile(
                 leading: Icon(active ? Icons.workspace_premium : Icons.account_circle_outlined, color: active ? Colors.amber : null),
                 title: Text(active ? '👑 PREMIUM ACTIVE' : 'Free Account', style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(active ? ' • Valid until ' : 'Free plan • Upgrade to CashTrack Premium'),
+                onTap: _showPremium,
+                subtitle: Text(active ? '$plan • Valid until $expiry' : 'Free plan • Upgrade to CashTrack Premium'),
               );
             },
           ),
