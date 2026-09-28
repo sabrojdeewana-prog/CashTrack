@@ -13,7 +13,7 @@ class AdsService {
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: onLoaded,
+        onAdLoaded: (Ad ad) { onLoaded(ad as BannerAd); },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
           onFailed?.call(error);
