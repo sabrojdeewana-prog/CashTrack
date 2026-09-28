@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../services/ads_service.dart';
 
 import '../database/database_helper.dart';
 import '../models/transaction_model.dart';
@@ -15,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  BannerAd? _bannerAd;
+  bool _bannerLoaded = false;
   static const Color navy = Color(0xFF172033);
   static const Color blue = Color(0xFF1565C0);
   static const Color green = Color(0xFF16A34A);
@@ -108,6 +112,30 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     load();
+    _bannerAd = AdsService().createBannerAd(
+      onLoaded: (ad) {
+        if (!mounted) {
+          ad.dispose();
+          return;
+        }
+        setState(() {
+          _bannerLoaded = true;
+        });
+      },
+      onFailed: (_) {
+        if (mounted) {
+          setState(() {
+            _bannerLoaded = false;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
   }
 
   Future<void> load() async {
@@ -294,7 +322,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-            const SizedBox(height: 25),
+            if (_bannerLoaded && _bannerAd != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: SizedBox(
+              width: _bannerAd!.size.width.toDouble(),
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            ),
+          ),
+        const SizedBox(height: 25),
 
             _sectionHeader(
               'Quick Actions',
