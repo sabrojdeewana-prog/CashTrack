@@ -154,37 +154,6 @@ Map<String, dynamic>? analytics;  bool loadingAnalytics = true;  String? analyti
             const SizedBox(height: 24),
 
             const SizedBox(height: 24),
-            _sectionTitle(
-              Icons.receipt_long_rounded,
-              'Transactions & Reports',
-            ),
-            const SizedBox(height: 10),
-            _activityCard(),
-
-            const SizedBox(height: 24),
-            _sectionTitle(
-              Icons.store_rounded,
-              'Store & Download Statistics',
-            ),
-            const SizedBox(height: 10),
-            _storeCard(),
-
-            const SizedBox(height: 24),
-            _sectionTitle(
-              Icons.workspace_premium_rounded,
-              'Premium',
-            ),
-            const SizedBox(height: 10),
-            _premiumCard(),
-
-            const SizedBox(height: 24),
-            _sectionTitle(
-              Icons.security_rounded,
-              'Admin & Security',
-            ),
-            const SizedBox(height: 10),
-            _securityCard(),
-
             const SizedBox(height: 28),
 
             const Center(

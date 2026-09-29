@@ -23,6 +23,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     'Savings',
     'Loan Schedule',
     'Tax',
+    'Age Calculator',
     'History',
   ];
 
@@ -44,6 +45,34 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   String? operator;
   bool waitingForSecondNumber = false;
   bool justCalculated = false;
+DateTime? ageDob;  DateTime ageAsOf = DateTime.now();
+
+  Future<void> pickAgeDate({required bool dob}) async {
+    final today = DateTime.now();
+    final initial = dob ? (ageDob ?? DateTime(2000, 1, 1)) : ageAsOf;
+    final safeInitial = initial.isAfter(today) ? today : initial;
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: safeInitial,
+      firstDate: DateTime(1900),
+      lastDate: today,
+    );
+
+    if (picked == null) return;
+
+    setState(() {
+      if (dob) {
+        ageDob = picked;
+        if (ageAsOf.isBefore(picked)) {
+          ageAsOf = today;
+        }
+      } else {
+        ageAsOf = picked;
+      }
+      result = "";
+    });
+  }
 
   double number(TextEditingController c) {
     return double.tryParse(c.text.trim()) ?? 0;
@@ -233,6 +262,57 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       operator = null;
       waitingForSecondNumber = false;
       justCalculated = true;
+    });
+  }
+
+  DateTime addMonthsClamped(DateTime date, int months) {
+    final total = date.year * 12 + date.month - 1 + months;
+    final year = total ~/ 12;
+    final month = total % 12 + 1;
+    final lastDay = DateTime(year, month + 1, 0).day;
+    final day = math.min(date.day, lastDay);
+    return DateTime(year, month, day);
+  }
+
+  void calculateAge() {
+    if (ageDob == null) {
+      setState(() {
+        result = "Please select your Date of Birth.";
+      });
+      return;
+    }
+
+    if (ageAsOf.isBefore(ageDob!)) {
+      setState(() {
+        result = "As-of date cannot be before Date of Birth.";
+      });
+      return;
+    }
+
+    int years = ageAsOf.year - ageDob!.year;
+    DateTime cursor = addMonthsClamped(ageDob!, years * 12);
+
+    if (cursor.isAfter(ageAsOf)) {
+      years--;
+      cursor = addMonthsClamped(ageDob!, years * 12);
+    }
+
+    int months = 0;
+    while (true) {
+      final next = addMonthsClamped(cursor, 1);
+      if (next.isAfter(ageAsOf)) break;
+      cursor = next;
+      months++;
+    }
+
+    final days = ageAsOf.difference(cursor).inDays;
+    final totalMonths = years * 12 + months;
+    final totalDays = ageAsOf.difference(ageDob!).inDays;
+
+    setState(() {
+      result = "Age: $years Years • $months Months • $days Days\n"
+          "Total: $totalMonths Months • $totalDays Days";
+      saveHistory(result.replaceAll("\\n", " • "));
     });
   }
 
@@ -566,6 +646,38 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
+  Widget ageCalculatorForm() {
+    String dateText(DateTime date) =>
+        "${date.day.toString().padLeft(2, 0)}-${date.month.toString().padLeft(2, 0)}-${date.year}";
+
+    return Column(
+      children: [
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.cake_outlined),
+            title: const Text("Date of Birth"),
+            subtitle: Text(
+              ageDob == null
+                  ? "Select your birth date"
+                  : dateText(ageDob!),
+            ),
+            trailing: const Icon(Icons.calendar_month),
+            onTap: () => pickAgeDate(dob: true),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.event_outlined),
+            title: const Text("Calculate Age On"),
+            subtitle: Text(dateText(ageAsOf)),
+            trailing: const Icon(Icons.calendar_month),
+            onTap: () => pickAgeDate(dob: false),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget toolForm() {
     switch (selected) {
       case 1:
@@ -653,6 +765,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         );
 
       case 12:
+        return ageCalculatorForm();
+
+      case 13:
         return _history();
 
       default:
@@ -690,7 +805,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     final isBasic = selected == 0;
-    final isHistory = selected == 12;
+    final isHistory = selected == 13;
 
     return Scaffold(
       appBar: AppBar(
@@ -748,11 +863,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                             SizedBox(
                               height: 52,
                               child: ElevatedButton.icon(
-                                onPressed: calculate,
+                                onPressed: selected == 12 ? calculateAge : calculate,
                                 icon:
                                     const Icon(Icons.calculate),
-                                label: const Text(
-                                  'Calculate',
+                                label: Text(
+                                  selected == 12 ? 'Calculate Age' : 'Calculate',
                                   style: TextStyle(fontSize: 17),
                                 ),
                               ),
