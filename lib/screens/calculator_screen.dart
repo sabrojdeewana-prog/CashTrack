@@ -648,7 +648,7 @@ DateTime? ageDob;  DateTime ageAsOf = DateTime.now();
 
   Widget ageCalculatorForm() {
     String dateText(DateTime date) =>
-        "${date.day.toString().padLeft(2, 0)}-${date.month.toString().padLeft(2, 0)}-${date.year}";
+        "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
 
     return Column(
       children: [
