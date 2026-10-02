@@ -23,10 +23,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Create Android project
-        run: |
-          rm -rf android
-          flutter create --platforms=android .
 
       - name: Set Android compile SDK
         run: |
